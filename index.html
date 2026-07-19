@@ -853,13 +853,6 @@ const seoIntentStarts = new Set([
   'como', 'cuando', 'donde', 'guia', 'ideas', 'por', 'porque', 'que', 'razones', 'ventajas',
 ])
 
-const seoIntentPatterns = [
-  { test: /\bcomo\b|\bguia\b|\bpasos\b|\bmetodo\b/, label: 'Informacional práctico' },
-  { test: /\bpor que\b|\bporque\b|\brazones\b|\bcausas\b/, label: 'Informacional explicativo' },
-  { test: /\bmejor\b|\bcomparar\b|\bcomparacion\b|\bvs\b|\bdiferencia\b/, label: 'Comparativo' },
-  { test: /\bcomprar\b|\bprecio\b|\bcosto\b|\bservicio\b|\bherramienta\b/, label: 'Comercial' },
-]
-
 const CATEGORY_FALLBACK = 'Generales'
 
 const categoryRules = [
@@ -1499,6 +1492,15 @@ function configFromInputs() {
   syncPositionControls()
 }
 
+function syncSlugFromTitle() {
+  if (!state.seo) return
+  const title = cleanText(state.title) || state.seo.title
+  state.seo.title = title
+  state.seo.slug = toSlug(title)
+  state.seo.canonical = `${BLOG_BASE_URL}${state.seo.slug}`
+  state.seo.alt = `Portada del escrito "${title}" de ${DEFAULT_AUTHOR}`
+}
+
 function toast(message) {
   els.toast.textContent = message
   els.toast.classList.add('show')
@@ -1616,6 +1618,7 @@ function addCandidate(score, display, points, source = 'texto') {
   const norm = normalizedPhrase(display)
   if (!norm) return
   const words = norm.split(' ')
+  if (words.some((word) => /^\d+$/.test(word))) return
   if (source !== 'titulo' && source !== 'entidad' && !isUsefulSeoPhrase(words)) return
   const current = score.get(norm) || { display, score: 0, source }
   current.score += points
@@ -1649,16 +1652,19 @@ function isDuplicateKeyword(candidate, selected) {
   })
 }
 
-function inferSearchIntent(title, text) {
-  const source = normalizedPhrase(`${title} ${splitSentences(text).slice(0, 3).join(' ')}`)
-  const match = seoIntentPatterns.find((pattern) => pattern.test.test(source))
-  return match ? match.label : 'Informacional'
+function substantialParagraphs(text) {
+  return String(text || '')
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph.length > 60)
+    .join('\n\n')
 }
 
 function keywordsFromText(text, title) {
   const score = new Map()
+  const body = substantialParagraphs(text)
   const titleTokens = tokenizeSeo(title)
-  const bodyTokens = tokenizeSeo(text)
+  const bodyTokens = tokenizeSeo(body)
   const allTokens = [...titleTokens, ...bodyTokens]
   const titlePhrase = phraseFromTokens(titleTokens).trim()
 
@@ -1666,8 +1672,10 @@ function keywordsFromText(text, title) {
     addCandidate(score, titlePhrase, 28, 'titulo')
   }
 
-  extractEntities(`${title}\n${text}`).forEach((entity) => {
-    addCandidate(score, entity, 18, 'entidad')
+  const entities = extractEntities(`${title}\n${body}`)
+  const entityPhrases = new Set(entities.map((entity) => normalizedPhrase(entity)))
+  entities.forEach((entity) => {
+    addCandidate(score, entity, 10, 'entidad')
   })
 
   for (let size = 2; size <= 5; size += 1) {
@@ -1675,6 +1683,7 @@ function keywordsFromText(text, title) {
       const slice = allTokens.slice(i, i + size)
       const normWords = slice.map((token) => token.norm)
       if (!isUsefulSeoPhrase(normWords)) continue
+      if (entityPhrases.has(normWords.join(' '))) continue
       const display = phraseFromTokens(slice)
       const inTitle = i < titleTokens.length
       const earlyBoost = i < Math.max(80, allTokens.length * 0.12) ? 2.4 : 1
@@ -1688,10 +1697,16 @@ function keywordsFromText(text, title) {
 
   const selected = []
   ranked.forEach((candidate) => {
-    if (selected.length >= 12) return
+    if (selected.length >= 2) return
     if (isDuplicateKeyword(candidate.display, selected)) return
     selected.push(candidate.display)
   })
+
+  if (!selected.length) {
+    selected.push(DEFAULT_AUTHOR)
+  } else if (selected.length === 1 && !isDuplicateKeyword(DEFAULT_AUTHOR, selected)) {
+    selected.unshift(DEFAULT_AUTHOR)
+  }
 
   const internalTags = []
   ranked.forEach((candidate) => {
@@ -1747,8 +1762,6 @@ function ensureSeoCompleteness() {
   }
 
   state.seo.keywords = keywords
-  state.seo.primaryKeyword = state.seo.primaryKeyword || keywords[0] || state.seo.title || state.title
-  state.seo.searchIntent = state.seo.searchIntent || inferSearchIntent(state.seo.title || state.title, els.article.value || '')
   state.seo.internalTags = Array.isArray(state.seo.internalTags) && state.seo.internalTags.length
     ? state.seo.internalTags
     : (derivedTags || keywords.filter((keyword) => normalizedPhrase(keyword).split(' ').length <= 3).slice(0, 7))
@@ -1760,11 +1773,10 @@ function analyzeArticle() {
   const title = article ? inferTitle(article) : typedTitle || 'Nuevo escrito'
   const finalTitle = typedTitle && typedTitle !== 'Cómo hacer un gran trabajo' && !article ? typedTitle : title
   const slug = toSlug(finalTitle)
+  const contentText = article ? (substantialParagraphs(article) || article) : ''
   const { keywords, internalTags } = keywordsFromText(article || finalTitle, finalTitle)
-  const primaryKeyword = keywords[0] || finalTitle.toLowerCase()
-  const searchIntent = inferSearchIntent(finalTitle, article || finalTitle)
   const category = inferCategory(article || finalTitle, keywords).join(', ')
-  const description = buildDescription(article || finalTitle, finalTitle)
+  const description = buildDescription(contentText || finalTitle, finalTitle)
   const canonical = `${BLOG_BASE_URL}${slug}`
   const alt = `Portada del escrito "${finalTitle}" de ${DEFAULT_AUTHOR}`
   const wordCount = article ? article.split(/\s+/).filter(Boolean).length : 0
@@ -1775,8 +1787,6 @@ function analyzeArticle() {
     category,
     author: DEFAULT_AUTHOR,
     canonical,
-    primaryKeyword,
-    searchIntent,
     keywords,
     internalTags,
     description,
@@ -1835,8 +1845,6 @@ function buildCopyAll() {
     `Autor: ${state.seo.author}`,
     `Enlace canónico: ${state.seo.canonical}`,
     `Título: ${state.seo.title}`,
-    `Keyword principal: ${state.seo.primaryKeyword}`,
-    `Intención de búsqueda: ${state.seo.searchIntent}`,
     `Texto alternativo portada: ${state.seo.alt}`,
     `Descripción de la publicación: ${state.seo.description}`,
     `Palabras clave Google: ${state.seo.keywords.join(', ')}`,
@@ -1860,8 +1868,6 @@ function renderSeo() {
         ['author', 'Autor', state.seo.author],
         ['canonical', 'Enlace canónico', state.seo.canonical, true],
         ['title', 'Título', state.seo.title, true],
-        ['primaryKeyword', 'Keyword principal', state.seo.primaryKeyword],
-        ['searchIntent', 'Intención Google', state.seo.searchIntent],
         ['alt', 'Texto alternativo', state.seo.alt, true],
         ['description', 'Descripción', state.seo.description, true],
         ['keywords', 'Palabras clave Google', state.seo.keywords, true],
@@ -1908,8 +1914,6 @@ function renderSeo() {
         ['Autor', state.seo.author],
         ['Enlace canónico', state.seo.canonical],
         ['Título', state.seo.title],
-        ['Keyword principal', state.seo.primaryKeyword],
-        ['Intención Google', state.seo.searchIntent],
         ['Imagen de portada', 'descarga el PNG 2X y súbelo al campo de portada'],
         ['Texto alternativo', state.seo.alt],
         ['Descripción', state.seo.description],
@@ -2137,7 +2141,17 @@ function bind() {
   els.analyze.addEventListener('click', analyzeArticle)
   els.copyAllSeo.addEventListener('click', () => copyText(buildCopyAll()))
 
-  ;[els.title, els.showTitle, els.gradientOnly, els.palette, els.titleX, els.titleY, els.titleSize, els.detail, els.grain, els.softness].forEach((input) => {
+  els.title.addEventListener('input', () => {
+    syncTitleVisibility()
+    configFromInputs()
+    syncSlugFromTitle()
+    render()
+    renderVariants()
+    renderSeo()
+    saveProject()
+  })
+
+  ;[els.showTitle, els.gradientOnly, els.palette, els.titleX, els.titleY, els.titleSize, els.detail, els.grain, els.softness].forEach((input) => {
     input.addEventListener('input', () => {
       syncTitleVisibility()
       configFromInputs()
