@@ -760,6 +760,7 @@ const CANVAS_WIDTH = 600
 const CANVAS_HEIGHT = 400
 const PREVIEW_SCALE = 2
 const HISTORY_KEY = 'escritos-portadas:used-seeds:v1'
+const PROJECT_KEY = 'escritos-portadas:project:v1'
 const BLOG_BASE_URL = 'https://escritos.ricardolopezreyero.com/post/'
 const DEFAULT_AUTHOR = 'Ricardo Lopez Reyero'
 
@@ -862,6 +863,86 @@ function readHistory() {
 
 function writeHistory(items) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(-500)))
+}
+
+function readSavedProject() {
+  try {
+    const raw = localStorage.getItem(PROJECT_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function saveProject() {
+  const payload = {
+    article: els.article.value,
+    title: state.title,
+    showTitle: state.showTitle,
+    gradientOnly: state.gradientOnly,
+    paletteId: state.paletteId,
+    titleStyle: state.titleStyle,
+    titleAlign: state.titleAlign,
+    titleX: state.titleX,
+    titleY: state.titleY,
+    titleSize: state.titleSize,
+    details: state.details,
+    grain: state.grain,
+    softness: state.softness,
+    seed: state.seed,
+    born: state.born,
+    variants: state.variants,
+    seo: state.seo,
+  }
+  localStorage.setItem(PROJECT_KEY, JSON.stringify(payload))
+}
+
+function applySavedProject() {
+  const saved = readSavedProject()
+  if (!saved) return false
+
+  state.title = typeof saved.title === 'string' ? saved.title : state.title
+  state.showTitle = typeof saved.showTitle === 'boolean' ? saved.showTitle : state.showTitle
+  state.gradientOnly = typeof saved.gradientOnly === 'boolean' ? saved.gradientOnly : state.gradientOnly
+  state.paletteId = typeof saved.paletteId === 'string' ? saved.paletteId : state.paletteId
+  state.titleStyle = typeof saved.titleStyle === 'string' ? saved.titleStyle : state.titleStyle
+  state.titleAlign = typeof saved.titleAlign === 'string' ? saved.titleAlign : state.titleAlign
+  state.titleX = Number.isFinite(Number(saved.titleX)) ? Number(saved.titleX) : state.titleX
+  state.titleY = Number.isFinite(Number(saved.titleY)) ? Number(saved.titleY) : state.titleY
+  state.titleSize = Number.isFinite(Number(saved.titleSize)) ? Number(saved.titleSize) : state.titleSize
+  state.details = typeof saved.details === 'boolean' ? saved.details : state.details
+  state.grain = typeof saved.grain === 'boolean' ? saved.grain : state.grain
+  state.softness = Number.isFinite(Number(saved.softness)) ? Number(saved.softness) : state.softness
+  state.seed = typeof saved.seed === 'string' ? saved.seed : state.seed
+  state.born = saved.born && typeof saved.born === 'object' ? saved.born : state.born
+  state.variants = Array.isArray(saved.variants) ? saved.variants : state.variants
+  state.seo = saved.seo && typeof saved.seo === 'object' ? saved.seo : state.seo
+
+  els.article.value = typeof saved.article === 'string' ? saved.article : ''
+  els.title.value = state.title
+  els.showTitle.checked = state.showTitle
+  els.gradientOnly.checked = state.gradientOnly
+  els.palette.value = palettes.some((palette) => palette.id === state.paletteId) ? state.paletteId : 'random'
+  els.titleX.value = String(Math.round(state.titleX))
+  els.titleY.value = String(Math.round(state.titleY))
+  els.titleSize.value = String(Math.round(state.titleSize))
+  els.detail.checked = state.details
+  els.grain.checked = state.grain
+  els.softness.value = String(Math.round(state.softness))
+
+  document.querySelectorAll('#titleStyleGroup button').forEach((button) => {
+    button.classList.toggle('active', button.dataset.style === state.titleStyle)
+  })
+  document.querySelectorAll('#alignGroup button').forEach((button) => {
+    button.classList.toggle('active', button.dataset.align === state.titleAlign)
+  })
+
+  syncTitleVisibility()
+  syncPositionControls()
+  renderSeo()
+  return true
 }
 
 function makeBirthSeed(offset = 0) {
@@ -1206,6 +1287,7 @@ function renderVariants() {
       state.born = variant.born
       render()
       renderVariants()
+      saveProject()
     })
   })
 }
@@ -1216,6 +1298,7 @@ function buildVariantSet() {
   state.born = state.variants[0].born
   render()
   renderVariants()
+  saveProject()
 }
 
 function configFromInputs() {
@@ -1403,6 +1486,7 @@ function analyzeArticle() {
   render()
   renderVariants()
   renderSeo()
+  saveProject()
   toast('SEO listo')
 }
 
@@ -1602,6 +1686,7 @@ function setTextPosition(x, y) {
   syncPositionControls()
   render()
   renderVariants()
+  saveProject()
 }
 
 function setTextAlignForX(x) {
@@ -1629,6 +1714,7 @@ function initSegmented(groupId, key, dataAttr) {
       state[key] = button.dataset[dataAttr]
       render()
       renderVariants()
+      saveProject()
     })
   })
 }
@@ -1680,6 +1766,7 @@ function bind() {
 
   els.article.addEventListener('input', () => {
     clearTimeout(analyzeTimer)
+    saveProject()
     if (els.article.value.trim().length < 80) return
     analyzeTimer = setTimeout(analyzeArticle, 650)
   })
@@ -1693,6 +1780,7 @@ function bind() {
       configFromInputs()
       render()
       renderVariants()
+      saveProject()
     })
   })
 
@@ -1718,14 +1806,31 @@ function bind() {
 }
 
 initPaletteOptions()
+const restoredProject = applySavedProject()
 bind()
-configFromInputs()
-syncTitleVisibility()
-renderSeo()
+if (!restoredProject) {
+  configFromInputs()
+  syncTitleVisibility()
+  renderSeo()
+}
 if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(buildVariantSet)
+  document.fonts.ready.then(() => {
+    if (restoredProject && state.seed && state.variants.length) {
+      render()
+      renderVariants()
+      saveProject()
+    } else {
+      buildVariantSet()
+    }
+  })
 } else {
-  buildVariantSet()
+  if (restoredProject && state.seed && state.variants.length) {
+    render()
+    renderVariants()
+    saveProject()
+  } else {
+    buildVariantSet()
+  }
 }
 </script>
 </body>
