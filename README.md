@@ -1,60 +1,20 @@
-# Escritos Portadas
+# Portadas para Escritos
 
-[Abrir generador](https://ricardolopezreyero.github.io/Escritos_portadas/)
+Con esta herramienta creas, en un minuto, la portada de un artículo nuevo y toda la información que necesitas para publicarlo.
 
-Generador de portadas para el blog **Escritos Ricardo Lopez Reyero**.
+**[Abrir el generador](https://ricardolopezreyero.github.io/Escritos_portadas/)**
 
-- Medida base: `600 x 400 px`.
-- Exportacion retina: `1200 x 800 px` con la misma proporcion.
-- Cada portada nace con una semilla unica basada en minuto, segundo, decima de segundo, milisegundo y contador local.
-- Puede exportar solo el degradado premium o agregar titulo.
-- Analiza el escrito y prepara titulo, slug, categoria, canonical, descripcion SEO, alt text y palabras clave.
-- Genera palabras clave tipo Google: frases buscables, entidades, keyword principal e intencion de busqueda.
-- Incluye botones de copiar por campo y un bloque completo en el orden de publicacion del blog.
-- Guarda automaticamente el ultimo proyecto en este navegador para reabrirlo como lo dejaste.
-- Inserta una firma invisible en pixeles: `Ricardo López Reyero` / `RLR`.
-- Usa el logo de Ricardo Lopez Reyero y favicon RLR.
-- Puede subir cada PNG descargado a GitHub mediante un Cloudflare Worker seguro.
-- No requiere backend ni instalacion: abre `index.html` o publicalo en GitHub Pages.
+## Cómo se usa
 
-## Uso
+1. Pega tu escrito completo en el primer cuadro.
+2. Presiona **Analizar y llenar SEO**. La herramienta lee el texto y te propone el título, la categoría, la descripción, las palabras clave y todo lo que se pega en el blog al publicar.
+3. Mira la portada que aparece del lado derecho. Si quieres, cámbiale el color, mueve el título a otra posición o prueba otro estilo.
+4. Cuando te guste como se ve, descárgala y copia los datos que necesites con el botón **Copiar** de cada campo.
 
-1. Pega el escrito completo.
-2. Pulsa `Analizar y llenar SEO`.
-3. Copia cada campo en el orden sugerido para tu CMS.
-4. Ajusta el titulo de la portada si hace falta.
-5. Mueve el titulo con la cuadricula, los sliders o clicando/arrastrando sobre la portada.
-6. Descarga `1X`, `2X` o copia el PNG.
+Cada vez que abres el generador nace una portada distinta, aunque pegues el mismo texto de siempre. Nunca se repite.
 
-## Publicacion
+## Detalles que ya trae resuelto
 
-Este repo puede publicarse directo en GitHub Pages porque es una pagina estatica.
-
-## Subida segura a GitHub
-
-La app estatica no guarda tokens. Para que cada descarga tambien suba la imagen al repo:
-
-1. Crea un token fine-grained de GitHub con acceso solo a `ricardolopezreyero/Escritos_portadas` y permiso `Contents: Read and write`.
-2. Entra a la carpeta `worker`.
-3. Ejecuta:
-
-```bash
-wrangler secret put GITHUB_TOKEN
-wrangler secret put UPLOAD_KEY
-wrangler deploy
-```
-
-4. Copia la URL del Worker.
-5. En la app pulsa `GitHub` y pega:
-   - URL del Worker.
-   - La misma `UPLOAD_KEY`.
-
-Desde ese momento, `Descargar 1X` y `Descargar 2X` tambien intentan guardar el PNG en:
-
-```text
-portadas/YYYY/MM/DD-HHMMSS-ms-nombre-del-archivo.png
-```
-
-## URL
-
-[Abrir generador](https://ricardolopezreyero.github.io/Escritos_portadas/)
+- Guarda tu último trabajo en este navegador, así que si cierras la pestaña por accidente lo encuentras igual como lo dejaste.
+- Cada imagen lleva una firma tuya escondida, invisible a simple vista.
+- El botón **Copiar todo** te da los datos en el orden exacto para pegarlos al publicar.

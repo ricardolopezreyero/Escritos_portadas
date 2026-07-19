@@ -124,12 +124,6 @@ button {
   gap: 8px;
 }
 
-.action-measure {
-  color: rgba(255, 255, 255, 0.52);
-  font-size: 11px;
-  font-weight: 700;
-}
-
 .btn {
   min-height: 40px;
   display: inline-flex;
@@ -608,10 +602,6 @@ canvas {
     flex: 1 1 135px;
   }
 
-  .action-measure {
-    text-align: right;
-  }
-
   .layout {
     grid-template-columns: 1fr;
   }
@@ -661,7 +651,7 @@ canvas {
 <div class="app">
   <header class="topbar">
     <div class="brand">
-      <a class="brand-link" href="https://escritos.ricardolopezreyero.com" target="_blank" rel="noopener">
+      <a class="brand-link" href="https://edu.superleads.mx/v2/location/oJZ21k8uxJN71kkkhwF9/blogs/site/yl2ST12heOIvopTgWwn1?tab=blog-posts" target="_blank" rel="noopener">
         <img class="brand-mark" src="assets/rlr-icon.png" alt="RLR">
         <div class="brand-text">
           <strong>Generador portadas escritos</strong>
@@ -673,9 +663,7 @@ canvas {
         <button class="btn" id="copyBtn" type="button">Copiar PNG</button>
         <button class="btn" id="download1xBtn" type="button">Descargar 1X</button>
         <button class="btn primary" id="download2xBtn" type="button">Descargar 2X</button>
-        <button class="btn" id="githubConfigBtn" type="button">GitHub</button>
       </div>
-      <div class="action-measure">600 x 400 px - 1200 x 800 px</div>
     </div>
   </header>
 
@@ -960,7 +948,6 @@ const els = {
   seoGrid: document.querySelector('#seoGrid'),
   seoStatus: document.querySelector('#seoStatus'),
   copyAllSeo: document.querySelector('#copyAllSeoBtn'),
-  githubConfig: document.querySelector('#githubConfigBtn'),
   toast: document.querySelector('#toast'),
 }
 
@@ -1962,20 +1949,6 @@ function readUploadConfig() {
   }
 }
 
-function saveUploadConfig(config) {
-  localStorage.setItem(UPLOAD_CONFIG_KEY, JSON.stringify(config))
-}
-
-function configureGithubUpload() {
-  const current = readUploadConfig()
-  const endpoint = window.prompt('URL del Worker de subida a GitHub', current.endpoint || '')
-  if (endpoint === null) return
-  const key = window.prompt('Clave de subida del Worker', current.key || '')
-  if (key === null) return
-  saveUploadConfig({ endpoint: endpoint.trim(), key: key.trim() })
-  toast(endpoint.trim() && key.trim() ? 'GitHub configurado' : 'GitHub desactivado')
-}
-
 function buildUploadPath(fileName) {
   const date = new Date()
   const year = date.getFullYear()
@@ -2196,7 +2169,6 @@ function bind() {
 
   document.querySelector('#download1xBtn').addEventListener('click', () => download(1))
   document.querySelector('#download2xBtn').addEventListener('click', () => download(2))
-  els.githubConfig.addEventListener('click', configureGithubUpload)
   document.querySelector('#copyBtn').addEventListener('click', () => {
     copyPng().catch(() => {
       download(2)
