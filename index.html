@@ -65,9 +65,9 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 16px clamp(18px, 4vw, 42px);
-  background: rgba(255, 255, 255, 0.86);
-  border-bottom: 1px solid rgba(20, 27, 41, 0.08);
+  padding: 12px clamp(18px, 4vw, 42px);
+  background: #050505;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
   backdrop-filter: blur(18px);
 }
 
@@ -78,10 +78,20 @@ button {
   min-width: 0;
 }
 
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: #fff;
+  text-decoration: none;
+}
+
 .brand-logo {
   display: block;
   width: clamp(170px, 18vw, 260px);
   height: auto;
+  filter: brightness(0) invert(1);
 }
 
 .brand-mark {
@@ -98,6 +108,7 @@ button {
 
 .brand strong {
   display: block;
+  color: #fff;
   font-size: 18px;
   letter-spacing: 0;
 }
@@ -123,7 +134,7 @@ button {
 }
 
 .action-measure {
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.68);
   font-size: 12px;
   font-weight: 800;
 }
@@ -174,9 +185,9 @@ button {
 }
 
 .btn.install {
-  color: var(--accent);
-  background: rgba(23, 92, 255, 0.07);
-  border-color: rgba(23, 92, 255, 0.18);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .btn.install[hidden] {
@@ -357,10 +368,10 @@ button {
 .stage {
   min-width: 0;
   display: grid;
-  align-content: center;
+  align-content: start;
   justify-items: center;
-  gap: 18px;
-  padding: clamp(22px, 4vw, 48px);
+  gap: 14px;
+  padding: clamp(14px, 2.2vw, 26px) clamp(22px, 4vw, 48px) clamp(22px, 4vw, 48px);
 }
 
 .canvas-shell {
@@ -597,6 +608,10 @@ canvas {
     flex-direction: row;
   }
 
+  .brand-link {
+    width: 100%;
+  }
+
   .brand-logo {
     display: none;
   }
@@ -669,11 +684,13 @@ canvas {
 <div class="app">
   <header class="topbar">
     <div class="brand">
-      <img class="brand-mark" src="assets/rlr-icon.png" alt="RLR">
-      <img class="brand-logo" src="assets/ricardo-logo.svg" alt="Ricardo Lopez Reyero">
-      <div class="brand-text">
-        <strong>Escritos - Portadas</strong>
-      </div>
+      <a class="brand-link" href="https://escritos.ricardolopezreyero.com" target="_blank" rel="noopener">
+        <img class="brand-mark" src="assets/rlr-icon.png" alt="RLR">
+        <img class="brand-logo" src="assets/ricardo-logo.svg" alt="Ricardo Lopez Reyero">
+        <div class="brand-text">
+          <strong>Generador portadas escritos</strong>
+        </div>
+      </a>
     </div>
     <div class="actions">
       <div class="action-buttons">
