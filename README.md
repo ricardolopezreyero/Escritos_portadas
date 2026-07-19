@@ -11,7 +11,7 @@ Generador de portadas para el blog **Escritos Ricardo Lopez Reyero**.
 - Incluye botones de copiar por campo y un bloque completo en el orden de publicacion del blog.
 - Guarda automaticamente el ultimo proyecto en este navegador para reabrirlo como lo dejaste.
 - Inserta una firma invisible en pixeles: `Ricardo López Reyero` / `RLR`.
-- Usa el logo de Ricardo Lopez Reyero, favicon RLR y se puede instalar como app web en Mac.
+- Usa el logo de Ricardo Lopez Reyero y favicon RLR.
 - Puede subir cada PNG descargado a GitHub mediante un Cloudflare Worker seguro.
 - No requiere backend ni instalacion: abre `index.html` o publicalo en GitHub Pages.
 
@@ -27,10 +27,6 @@ Generador de portadas para el blog **Escritos Ricardo Lopez Reyero**.
 ## Publicacion
 
 Este repo puede publicarse directo en GitHub Pages porque es una pagina estatica.
-
-## App en Mac
-
-En Chrome aparece el boton `Instalar app` cuando el navegador habilita la instalacion. En Safari de macOS se puede usar `Compartir > Agregar al Dock`.
 
 ## Subida segura a GitHub
 

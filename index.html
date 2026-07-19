@@ -5,12 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="Ricardo Lopez Reyero">
 <meta name="theme-color" content="#175cff">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Escritos Portadas">
 <title>Escritos - Portadas</title>
 <link rel="icon" type="image/png" href="assets/rlr-icon.png">
-<link rel="apple-touch-icon" href="assets/rlr-icon-180.png">
-<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -134,9 +130,9 @@ button {
 }
 
 .action-measure {
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 12px;
-  font-weight: 800;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .btn {
@@ -182,16 +178,6 @@ button {
 
 .btn.full {
   width: 100%;
-}
-
-.btn.install {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.22);
-}
-
-.btn.install[hidden] {
-  display: none;
 }
 
 .layout {
@@ -698,7 +684,6 @@ canvas {
         <button class="btn" id="download1xBtn" type="button">Descargar 1X</button>
         <button class="btn primary" id="download2xBtn" type="button">Descargar 2X</button>
         <button class="btn" id="githubConfigBtn" type="button">GitHub</button>
-        <button class="btn install" id="installAppBtn" type="button" hidden>Instalar app</button>
       </div>
       <div class="action-measure">600 x 400 px - 1200 x 800 px</div>
     </div>
@@ -967,7 +952,6 @@ const els = {
   seoStatus: document.querySelector('#seoStatus'),
   copyAllSeo: document.querySelector('#copyAllSeoBtn'),
   githubConfig: document.querySelector('#githubConfigBtn'),
-  installApp: document.querySelector('#installAppBtn'),
   toast: document.querySelector('#toast'),
 }
 
@@ -2176,41 +2160,6 @@ function initCanvasPositioning() {
   })
 }
 
-function initAppInstall() {
-  let deferredPrompt = null
-
-  window.addEventListener('beforeinstallprompt', (event) => {
-    event.preventDefault()
-    deferredPrompt = event
-    els.installApp.hidden = false
-  })
-
-  els.installApp.addEventListener('click', async () => {
-    if (!deferredPrompt) {
-      toast('En Mac usa Compartir > Agregar al Dock')
-      return
-    }
-
-    deferredPrompt.prompt()
-    await deferredPrompt.userChoice
-    deferredPrompt = null
-    els.installApp.hidden = true
-  })
-
-  window.addEventListener('appinstalled', () => {
-    deferredPrompt = null
-    els.installApp.hidden = true
-    toast('App instalada')
-  })
-}
-
-function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js').catch(() => {})
-  })
-}
-
 function bind() {
   let analyzeTimer = 0
 
@@ -2254,8 +2203,6 @@ function bind() {
   initSegmented('alignGroup', 'titleAlign', 'align')
   initPositionGrid()
   initCanvasPositioning()
-  initAppInstall()
-  registerServiceWorker()
 }
 
 initPaletteOptions()
