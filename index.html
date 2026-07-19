@@ -673,8 +673,8 @@ canvas {
         <section class="group">
           <div class="group-title">Escrito</div>
           <div class="field">
-            <label for="articleInput">Pega aqui el articulo</label>
-            <textarea id="articleInput" class="article-input" placeholder="Pega tu escrito completo. La herramienta supone titulo, slug, categoria, descripcion SEO, palabras clave y alt text."></textarea>
+            <label for="articleInput">Pega aquí el artículo</label>
+            <textarea id="articleInput" class="article-input" placeholder="Pega tu escrito completo. La herramienta supone título, slug, categoría, descripción SEO, palabras clave y alt text."></textarea>
           </div>
           <button class="btn primary full" id="analyzeBtn" type="button">Analizar y llenar SEO</button>
         </section>
@@ -682,11 +682,11 @@ canvas {
         <section class="group">
           <div class="group-title">Portada</div>
           <div class="field">
-            <label for="titleInput">Titulo</label>
-            <textarea id="titleInput" maxlength="130">Como hacer un gran trabajo</textarea>
+            <label for="titleInput">Título</label>
+            <textarea id="titleInput" maxlength="130">Cómo hacer un gran trabajo</textarea>
           </div>
           <div class="toggle-row">
-            <span>Mostrar titulo</span>
+            <span>Mostrar título</span>
             <label class="switch">
               <input id="showTitleInput" type="checkbox" checked>
               <i></i>
@@ -702,13 +702,13 @@ canvas {
         </section>
 
         <section class="group">
-          <div class="group-title">Composicion</div>
+          <div class="group-title">Composición</div>
           <div class="field">
             <label for="paletteInput">Color premium</label>
             <select id="paletteInput"></select>
           </div>
           <div class="field">
-            <label>Titulo</label>
+            <label>Título</label>
             <div class="segmented" id="titleStyleGroup">
               <button type="button" data-style="editorial" class="active">Editorial</button>
               <button type="button" data-style="glass">Cristal</button>
@@ -716,7 +716,7 @@ canvas {
             </div>
           </div>
           <div class="field">
-            <label>Alineacion</label>
+            <label>Alineación</label>
             <div class="segmented" id="alignGroup">
               <button type="button" data-align="left">Izq</button>
               <button type="button" data-align="center" class="active">Centro</button>
@@ -724,7 +724,7 @@ canvas {
             </div>
           </div>
           <div class="field">
-            <label>Posicion en cuadricula</label>
+            <label>Posición en cuadrícula</label>
             <div class="position-grid" id="positionGrid">
               <button type="button" data-x="18" data-y="24">Arriba izq</button>
               <button type="button" data-x="50" data-y="24">Arriba</button>
@@ -746,7 +746,7 @@ canvas {
             <input id="titleYInput" type="range" min="18" max="88" value="78">
           </div>
           <div class="field">
-            <label for="titleSizeInput" class="range-label">Tamano titulo <output id="titleSizeValue">62%</output></label>
+            <label for="titleSizeInput" class="range-label">Tamaño título <output id="titleSizeValue">62%</output></label>
             <input id="titleSizeInput" type="range" min="42" max="95" value="62">
           </div>
         </section>
@@ -775,11 +775,11 @@ canvas {
 
         <section class="group">
           <div class="group-title">Nacimiento</div>
-          <button class="btn primary" id="randomBtn" type="button">Nuevo random unico</button>
+          <button class="btn primary" id="randomBtn" type="button">Nuevo random único</button>
           <div class="seed-box">
             <div class="seed-line"><span>Semilla</span><b id="seedLabel"></b></div>
             <div class="seed-line"><span>Minuto</span><b id="minuteLabel"></b></div>
-            <div class="seed-line"><span>Decima</span><b id="deciLabel"></b></div>
+            <div class="seed-line"><span>Décima</span><b id="deciLabel"></b></div>
           </div>
         </section>
       </div>
@@ -820,7 +820,7 @@ const PROJECT_KEY = 'escritos-portadas:project:v1'
 const UPLOAD_ENDPOINT = 'https://escritos-portadas-upload.noisy-shape-4fc9.workers.dev'
 const UPLOAD_KEY = 'qP4H2lHTt96KAt3mam9OzMvQPIZByhHL'
 const BLOG_BASE_URL = 'https://escritos.ricardolopezreyero.com/post/'
-const DEFAULT_AUTHOR = 'Ricardo Lopez Reyero'
+const DEFAULT_AUTHOR = 'Ricardo López Reyero'
 const PIXEL_SIGNATURE_MAGIC = 'RLR1'
 const PIXEL_SIGNATURE_TEXT = 'Ricardo López Reyero|RLR'
 
@@ -854,7 +854,7 @@ const seoIntentStarts = new Set([
 ])
 
 const seoIntentPatterns = [
-  { test: /\bcomo\b|\bguia\b|\bpasos\b|\bmetodo\b/, label: 'Informacional practico' },
+  { test: /\bcomo\b|\bguia\b|\bpasos\b|\bmetodo\b/, label: 'Informacional práctico' },
   { test: /\bpor que\b|\bporque\b|\brazones\b|\bcausas\b/, label: 'Informacional explicativo' },
   { test: /\bmejor\b|\bcomparar\b|\bcomparacion\b|\bvs\b|\bdiferencia\b/, label: 'Comparativo' },
   { test: /\bcomprar\b|\bprecio\b|\bcosto\b|\bservicio\b|\bherramienta\b/, label: 'Comercial' },
@@ -898,12 +898,12 @@ const palettes = [
   { id: 'calma', name: 'Calma verde agua', colors: ['#d9f4c8', '#7ee6b2', '#34c6a5', '#8ad5ff', '#f5f7ff'] },
   { id: 'noche', name: 'Noche violeta', colors: ['#3227d8', '#6547ff', '#bd5dff', '#ffb7ef', '#9ed2ff'] },
   { id: 'papel', name: 'Papel dorado rosa', colors: ['#ffe5a6', '#ffaf7b', '#ff8aa5', '#cdb9ff', '#a6d9ff'] },
-  { id: 'bosque', name: 'Bosque electrico', colors: ['#0e7b5f', '#23d39b', '#94f0c6', '#7cc8ff', '#f4fbff'] },
+  { id: 'bosque', name: 'Bosque eléctrico', colors: ['#0e7b5f', '#23d39b', '#94f0c6', '#7cc8ff', '#f4fbff'] },
   { id: 'tinta', name: 'Tinta editorial', colors: ['#1b2a6b', '#3155ff', '#79dcff', '#d8f1ff', '#f7d2e6'] },
 ]
 
 const state = {
-  title: 'Como hacer un gran trabajo',
+  title: 'Cómo hacer un gran trabajo',
   showTitle: true,
   gradientOnly: false,
   paletteId: 'random',
@@ -1714,19 +1714,23 @@ function buildDescription(text, title) {
     .filter((sentence) => normalizeText(sentence).replace(/[.!?]+$/, '') !== titleNorm)
     .filter((sentence) => sentence.length > 45)
   const foundIndex = sentences.findIndex((sentence) => normalizedPhrase(sentence).split(' ').filter((word) => !stopWords.has(word)).length >= 8)
-  let description = foundIndex >= 0 ? sentences[foundIndex] : ''
+
+  const MAX_LENGTH = 250
+  let description = ''
+  if (foundIndex >= 0) {
+    for (let i = foundIndex; i < sentences.length; i += 1) {
+      const candidate = description ? `${description} ${sentences[i]}` : sentences[i]
+      if (candidate.length > MAX_LENGTH) break
+      description = candidate
+    }
+  }
 
   if (!description) {
-    description = `Reflexion clara sobre ${title}, sus ideas principales y por que importan.`
+    description = `Reflexión clara sobre ${title}, sus ideas principales y por qué importan.`
   }
 
-  const nextSentence = foundIndex >= 0 ? sentences[foundIndex + 1] : null
-  if (description.length < 105 && nextSentence) {
-    description = `${description} ${nextSentence}`
-  }
-
-  if (description.length > 155) {
-    description = description.slice(0, 152).replace(/\s+\S*$/, '') + '...'
+  if (description.length > MAX_LENGTH) {
+    description = description.slice(0, MAX_LENGTH - 3).replace(/\s+\S*$/, '') + '...'
   }
 
   return description
@@ -1754,7 +1758,7 @@ function analyzeArticle() {
   const article = cleanText(els.article.value)
   const typedTitle = cleanText(els.title.value)
   const title = article ? inferTitle(article) : typedTitle || 'Nuevo escrito'
-  const finalTitle = typedTitle && typedTitle !== 'Como hacer un gran trabajo' && !article ? typedTitle : title
+  const finalTitle = typedTitle && typedTitle !== 'Cómo hacer un gran trabajo' && !article ? typedTitle : title
   const slug = toSlug(finalTitle)
   const { keywords, internalTags } = keywordsFromText(article || finalTitle, finalTitle)
   const primaryKeyword = keywords[0] || finalTitle.toLowerCase()
@@ -1827,14 +1831,14 @@ function buildCopyAll() {
   return [
     `Estado: ${state.seo.status}`,
     `Slug de URL: ${state.seo.slug}`,
-    `Categoria: ${state.seo.category}`,
+    `Categoría: ${state.seo.category}`,
     `Autor: ${state.seo.author}`,
-    `Enlace canonico: ${state.seo.canonical}`,
-    `Titulo: ${state.seo.title}`,
+    `Enlace canónico: ${state.seo.canonical}`,
+    `Título: ${state.seo.title}`,
     `Keyword principal: ${state.seo.primaryKeyword}`,
-    `Intencion de busqueda: ${state.seo.searchIntent}`,
+    `Intención de búsqueda: ${state.seo.searchIntent}`,
     `Texto alternativo portada: ${state.seo.alt}`,
-    `Descripcion de la publicacion: ${state.seo.description}`,
+    `Descripción de la publicación: ${state.seo.description}`,
     `Palabras clave Google: ${state.seo.keywords.join(', ')}`,
     `Etiquetas internas: ${state.seo.internalTags.join(', ')}`,
   ].join('\n')
@@ -1844,22 +1848,22 @@ function renderSeo() {
   const empty = !state.seo
   const fields = empty
     ? [
-        ['slug', 'Slug de URL', 'Aun sin analizar'],
-        ['category', 'Categoria', 'Aun sin analizar'],
-        ['title', 'Titulo', 'Aun sin analizar'],
-        ['description', 'Descripcion', 'Pega el escrito y pulsa analizar.'],
+        ['slug', 'Slug de URL', 'Aún sin analizar'],
+        ['category', 'Categoría', 'Aún sin analizar'],
+        ['title', 'Título', 'Aún sin analizar'],
+        ['description', 'Descripción', 'Pega el escrito y pulsa analizar.'],
       ]
     : [
         ['status', 'Publicar o programar', state.seo.status],
         ['slug', 'Slug de URL', state.seo.slug],
-        ['category', 'Categoria', state.seo.category],
+        ['category', 'Categoría', state.seo.category],
         ['author', 'Autor', state.seo.author],
-        ['canonical', 'Enlace canonico', state.seo.canonical, true],
-        ['title', 'Titulo', state.seo.title, true],
+        ['canonical', 'Enlace canónico', state.seo.canonical, true],
+        ['title', 'Título', state.seo.title, true],
         ['primaryKeyword', 'Keyword principal', state.seo.primaryKeyword],
-        ['searchIntent', 'Intencion Google', state.seo.searchIntent],
+        ['searchIntent', 'Intención Google', state.seo.searchIntent],
         ['alt', 'Texto alternativo', state.seo.alt, true],
-        ['description', 'Descripcion', state.seo.description, true],
+        ['description', 'Descripción', state.seo.description, true],
         ['keywords', 'Palabras clave Google', state.seo.keywords, true],
         ['internalTags', 'Etiquetas internas', state.seo.internalTags, true],
         ['order', 'Orden para pegar', '', true],
@@ -1900,15 +1904,15 @@ function renderSeo() {
       list.className = 'order-list'
       ;[
         ['Slug de URL', state.seo.slug],
-        ['Categoria', state.seo.category],
+        ['Categoría', state.seo.category],
         ['Autor', state.seo.author],
-        ['Enlace canonico', state.seo.canonical],
-        ['Titulo', state.seo.title],
+        ['Enlace canónico', state.seo.canonical],
+        ['Título', state.seo.title],
         ['Keyword principal', state.seo.primaryKeyword],
-        ['Intencion Google', state.seo.searchIntent],
-        ['Imagen de portada', 'descarga PNG 2X y subelo al campo de portada'],
+        ['Intención Google', state.seo.searchIntent],
+        ['Imagen de portada', 'descarga el PNG 2X y súbelo al campo de portada'],
         ['Texto alternativo', state.seo.alt],
-        ['Descripcion', state.seo.description],
+        ['Descripción', state.seo.description],
         ['Palabras clave Google', state.seo.keywords.join(', ')],
         ['Etiquetas internas', state.seo.internalTags.join(', ')],
       ].forEach(([name, content]) => {
@@ -1990,7 +1994,7 @@ async function download(scale) {
 
   uploadCanvasToGithub(canvas, fileName, scale)
     .then(() => toast('Descargado y subido a GitHub'))
-    .catch(() => toast('Descargado. GitHub no subio'))
+    .catch(() => toast('Descargado. GitHub no subió'))
 }
 
 async function copyPng() {
