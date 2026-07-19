@@ -83,10 +83,22 @@ button {
 }
 
 .actions {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.action-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.action-measure {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .btn {
@@ -542,13 +554,19 @@ canvas {
     flex-direction: column;
   }
 
-  .actions {
+  .actions,
+  .action-buttons {
     width: 100%;
     justify-content: stretch;
+    justify-items: stretch;
   }
 
-  .actions .btn {
+  .action-buttons .btn {
     flex: 1 1 135px;
+  }
+
+  .action-measure {
+    text-align: right;
   }
 
   .layout {
@@ -601,12 +619,14 @@ canvas {
   <header class="topbar">
     <div class="brand">
       <strong>Escritos - Portadas</strong>
-      <span>600 x 400 px - exportacion 1X y 2X</span>
     </div>
     <div class="actions">
-      <button class="btn" id="copyBtn" type="button">Copiar PNG</button>
-      <button class="btn" id="download1xBtn" type="button">Descargar 1X</button>
-      <button class="btn primary" id="download2xBtn" type="button">Descargar 2X</button>
+      <div class="action-buttons">
+        <button class="btn" id="copyBtn" type="button">Copiar PNG</button>
+        <button class="btn" id="download1xBtn" type="button">Descargar 1X</button>
+        <button class="btn primary" id="download2xBtn" type="button">Descargar 2X</button>
+      </div>
+      <div class="action-measure">600 x 400 px - 1200 x 800 px</div>
     </div>
   </header>
 
@@ -732,7 +752,6 @@ canvas {
       <div class="canvas-shell">
         <div class="canvas-meta">
           <span id="paletteLabel"></span>
-          <span>600 x 400 - 1200 x 800</span>
         </div>
         <div class="preview-wrap">
           <canvas id="coverCanvas" width="1200" height="800"></canvas>
