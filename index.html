@@ -347,6 +347,7 @@ canvas {
   width: 100%;
   height: 100%;
   border-radius: inherit;
+  cursor: crosshair;
 }
 
 .variant-grid {
@@ -377,6 +378,41 @@ canvas {
   width: 100%;
   aspect-ratio: 3 / 2;
   border-radius: 7px;
+}
+
+.position-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.position-grid button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.position-grid button.active {
+  border-color: rgba(23, 92, 255, 0.44);
+  color: var(--accent);
+  background: rgba(23, 92, 255, 0.07);
+}
+
+.range-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.range-label output {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .seo-board {
@@ -625,10 +661,36 @@ canvas {
           <div class="field">
             <label>Alineacion</label>
             <div class="segmented" id="alignGroup">
-              <button type="button" data-align="left" class="active">Izq</button>
-              <button type="button" data-align="center">Centro</button>
+              <button type="button" data-align="left">Izq</button>
+              <button type="button" data-align="center" class="active">Centro</button>
               <button type="button" data-align="right">Der</button>
             </div>
+          </div>
+          <div class="field">
+            <label>Posicion en cuadricula</label>
+            <div class="position-grid" id="positionGrid">
+              <button type="button" data-x="18" data-y="24">Arriba izq</button>
+              <button type="button" data-x="50" data-y="24">Arriba</button>
+              <button type="button" data-x="82" data-y="24">Arriba der</button>
+              <button type="button" data-x="18" data-y="52">Centro izq</button>
+              <button type="button" data-x="50" data-y="52">Centro</button>
+              <button type="button" data-x="82" data-y="52">Centro der</button>
+              <button type="button" data-x="18" data-y="78">Abajo izq</button>
+              <button type="button" data-x="50" data-y="78" class="active">Abajo</button>
+              <button type="button" data-x="82" data-y="78">Abajo der</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="titleXInput" class="range-label">Mover horizontal <output id="titleXValue">50%</output></label>
+            <input id="titleXInput" type="range" min="8" max="92" value="50">
+          </div>
+          <div class="field">
+            <label for="titleYInput" class="range-label">Mover vertical <output id="titleYValue">78%</output></label>
+            <input id="titleYInput" type="range" min="18" max="88" value="78">
+          </div>
+          <div class="field">
+            <label for="titleSizeInput" class="range-label">Tamano titulo <output id="titleSizeValue">62%</output></label>
+            <input id="titleSizeInput" type="range" min="42" max="95" value="62">
           </div>
         </section>
 
@@ -740,7 +802,10 @@ const state = {
   gradientOnly: false,
   paletteId: 'random',
   titleStyle: 'editorial',
-  titleAlign: 'left',
+  titleAlign: 'center',
+  titleX: 50,
+  titleY: 78,
+  titleSize: 62,
   details: true,
   grain: true,
   softness: 72,
@@ -757,6 +822,13 @@ const els = {
   showTitle: document.querySelector('#showTitleInput'),
   gradientOnly: document.querySelector('#gradientOnlyInput'),
   palette: document.querySelector('#paletteInput'),
+  titleX: document.querySelector('#titleXInput'),
+  titleY: document.querySelector('#titleYInput'),
+  titleSize: document.querySelector('#titleSizeInput'),
+  titleXValue: document.querySelector('#titleXValue'),
+  titleYValue: document.querySelector('#titleYValue'),
+  titleSizeValue: document.querySelector('#titleSizeValue'),
+  positionGrid: document.querySelector('#positionGrid'),
   detail: document.querySelector('#detailInput'),
   grain: document.querySelector('#grainInput'),
   softness: document.querySelector('#softnessInput'),
@@ -1020,48 +1092,44 @@ function wrapLines(targetCtx, text, maxWidth, maxLines) {
   return trimmed
 }
 
-function fitTitle(targetCtx, text, width, maxWidth, maxLines) {
-  let size = Math.round(width * 0.092)
-  const minSize = Math.round(width * 0.044)
-  let lines = []
+function fitTitle(targetCtx, text, width, maxWidth, sizePercent) {
+  const scale = Math.max(42, Math.min(95, Number(sizePercent) || 62)) / 100
+  let size = Math.round(width * 0.072 * scale)
+  const minSize = Math.round(width * 0.03)
+
   while (size >= minSize) {
     targetCtx.font = `800 ${size}px Inter, sans-serif`
-    lines = wrapLines(targetCtx, text, maxWidth, maxLines)
-    if (lines.length <= maxLines) break
+    if (targetCtx.measureText(text).width <= maxWidth) {
+      return { size, lines: [text] }
+    }
     size -= 2
   }
-  return { size, lines }
+
+  targetCtx.font = `800 ${minSize}px Inter, sans-serif`
+  return { size: minSize, lines: wrapLines(targetCtx, text, maxWidth, 2) }
 }
 
 function drawTitle(targetCtx, width, height, config) {
   const title = String(config.title || '').trim()
   if (!config.showTitle || config.gradientOnly || !title) return
 
-  const padding = width * 0.072
-  const maxWidth = width * (config.titleAlign === 'center' ? 0.76 : 0.68)
-  const { size, lines } = fitTitle(targetCtx, title, width, maxWidth, 3)
+  const padding = width * 0.052
+  const maxWidth = width * 0.9
+  const { size, lines } = fitTitle(targetCtx, title, width, maxWidth, config.titleSize)
   const lineHeight = size * 1.08
   const blockHeight = lines.length * lineHeight
-  const y = config.titleStyle === 'quiet' ? height * 0.69 : height * 0.56
-
-  let x = padding
-  let align = 'left'
-  if (config.titleAlign === 'center') {
-    x = width / 2
-    align = 'center'
-  }
-  if (config.titleAlign === 'right') {
-    x = width - padding
-    align = 'right'
-  }
+  const x = width * (Math.max(8, Math.min(92, Number(config.titleX) || 50)) / 100)
+  const y = height * (Math.max(18, Math.min(88, Number(config.titleY) || 78)) / 100)
+  const align = config.titleAlign || 'center'
+  const widestLine = lines.reduce((max, line) => Math.max(max, targetCtx.measureText(line).width), 0)
 
   targetCtx.save()
   if (config.titleStyle === 'glass') {
-    const boxWidth = maxWidth + padding * 0.75
+    const boxWidth = widestLine + padding * 1.2
     const boxHeight = blockHeight + padding * 0.46
     const boxX = align === 'center' ? x - boxWidth / 2 : align === 'right' ? x - boxWidth : x - padding * 0.22
     const boxY = y - boxHeight / 2 - size * 0.08
-    roundRect(targetCtx, boxX, boxY, boxWidth, boxHeight, Math.max(18, width * 0.035))
+    roundRect(targetCtx, boxX, boxY, boxWidth, boxHeight, Math.max(12, width * 0.022))
     targetCtx.fillStyle = 'rgba(255,255,255,0.16)'
     targetCtx.fill()
     targetCtx.strokeStyle = 'rgba(255,255,255,0.32)'
@@ -1070,7 +1138,7 @@ function drawTitle(targetCtx, width, height, config) {
   } else if (config.titleStyle === 'editorial') {
     const fade = targetCtx.createLinearGradient(0, height * 0.18, 0, height)
     fade.addColorStop(0, 'rgba(4,8,22,0)')
-    fade.addColorStop(1, 'rgba(4,8,22,0.22)')
+    fade.addColorStop(1, 'rgba(4,8,22,0.16)')
     targetCtx.fillStyle = fade
     targetCtx.fillRect(0, 0, width, height)
   }
@@ -1080,8 +1148,8 @@ function drawTitle(targetCtx, width, height, config) {
   targetCtx.font = `800 ${size}px Inter, sans-serif`
   targetCtx.fillStyle = 'rgba(255,255,255,0.96)'
   targetCtx.shadowColor = 'rgba(8,12,28,0.36)'
-  targetCtx.shadowBlur = size * 0.22
-  targetCtx.shadowOffsetY = size * 0.08
+  targetCtx.shadowBlur = size * 0.16
+  targetCtx.shadowOffsetY = size * 0.055
 
   lines.forEach((line, index) => {
     const lineY = y - blockHeight / 2 + lineHeight * index + lineHeight / 2
@@ -1155,9 +1223,13 @@ function configFromInputs() {
   state.showTitle = els.showTitle.checked
   state.gradientOnly = els.gradientOnly.checked
   state.paletteId = els.palette.value
+  state.titleX = Number(els.titleX.value)
+  state.titleY = Number(els.titleY.value)
+  state.titleSize = Number(els.titleSize.value)
   state.details = els.detail.checked
   state.grain = els.grain.checked
   state.softness = Number(els.softness.value)
+  syncPositionControls()
 }
 
 function toast(message) {
@@ -1500,6 +1572,46 @@ function syncTitleVisibility() {
   }
 }
 
+function syncPositionControls() {
+  els.titleXValue.textContent = `${Math.round(state.titleX)}%`
+  els.titleYValue.textContent = `${Math.round(state.titleY)}%`
+  els.titleSizeValue.textContent = `${Math.round(state.titleSize)}%`
+
+  let bestButton = null
+  let bestDistance = Infinity
+  els.positionGrid.querySelectorAll('button').forEach((button) => {
+    const dx = Number(button.dataset.x) - state.titleX
+    const dy = Number(button.dataset.y) - state.titleY
+    const distance = Math.hypot(dx, dy)
+    if (distance < bestDistance) {
+      bestDistance = distance
+      bestButton = button
+    }
+    button.classList.remove('active')
+  })
+  if (bestButton && bestDistance < 12) {
+    bestButton.classList.add('active')
+  }
+}
+
+function setTextPosition(x, y) {
+  state.titleX = Math.max(8, Math.min(92, x))
+  state.titleY = Math.max(18, Math.min(88, y))
+  els.titleX.value = String(Math.round(state.titleX))
+  els.titleY.value = String(Math.round(state.titleY))
+  syncPositionControls()
+  render()
+  renderVariants()
+}
+
+function setTextAlignForX(x) {
+  const align = x < 35 ? 'left' : x > 65 ? 'right' : 'center'
+  state.titleAlign = align
+  document.querySelectorAll('#alignGroup button').forEach((button) => {
+    button.classList.toggle('active', button.dataset.align === align)
+  })
+}
+
 function initPaletteOptions() {
   palettes.forEach((palette) => {
     const option = document.createElement('option')
@@ -1521,6 +1633,48 @@ function initSegmented(groupId, key, dataAttr) {
   })
 }
 
+function initPositionGrid() {
+  els.positionGrid.querySelectorAll('button').forEach((button) => {
+    button.addEventListener('click', () => {
+      const x = Number(button.dataset.x)
+      const y = Number(button.dataset.y)
+      setTextAlignForX(x)
+      setTextPosition(x, y)
+    })
+  })
+}
+
+function initCanvasPositioning() {
+  let moving = false
+
+  const updateFromPointer = (event) => {
+    const rect = els.canvas.getBoundingClientRect()
+    const x = ((event.clientX - rect.left) / rect.width) * 100
+    const y = ((event.clientY - rect.top) / rect.height) * 100
+    setTextPosition(x, y)
+  }
+
+  els.canvas.addEventListener('pointerdown', (event) => {
+    if (!state.showTitle || state.gradientOnly) return
+    moving = true
+    els.canvas.setPointerCapture(event.pointerId)
+    updateFromPointer(event)
+  })
+
+  els.canvas.addEventListener('pointermove', (event) => {
+    if (!moving) return
+    updateFromPointer(event)
+  })
+
+  els.canvas.addEventListener('pointerup', () => {
+    moving = false
+  })
+
+  els.canvas.addEventListener('pointercancel', () => {
+    moving = false
+  })
+}
+
 function bind() {
   let analyzeTimer = 0
 
@@ -1533,7 +1687,7 @@ function bind() {
   els.analyze.addEventListener('click', analyzeArticle)
   els.copyAllSeo.addEventListener('click', () => copyText(buildCopyAll()))
 
-  ;[els.title, els.showTitle, els.gradientOnly, els.palette, els.detail, els.grain, els.softness].forEach((input) => {
+  ;[els.title, els.showTitle, els.gradientOnly, els.palette, els.titleX, els.titleY, els.titleSize, els.detail, els.grain, els.softness].forEach((input) => {
     input.addEventListener('input', () => {
       syncTitleVisibility()
       configFromInputs()
@@ -1559,6 +1713,8 @@ function bind() {
 
   initSegmented('titleStyleGroup', 'titleStyle', 'style')
   initSegmented('alignGroup', 'titleAlign', 'align')
+  initPositionGrid()
+  initCanvasPositioning()
 }
 
 initPaletteOptions()

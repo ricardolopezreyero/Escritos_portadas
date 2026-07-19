@@ -16,7 +16,8 @@ Generador de portadas para el blog **Escritos Ricardo Lopez Reyero**.
 2. Pulsa `Analizar y llenar SEO`.
 3. Copia cada campo en el orden sugerido para tu CMS.
 4. Ajusta el titulo de la portada si hace falta.
-5. Descarga `1X`, `2X` o copia el PNG.
+5. Mueve el titulo con la cuadricula, los sliders o clicando/arrastrando sobre la portada.
+6. Descarga `1X`, `2X` o copia el PNG.
 
 ## Publicacion
 
