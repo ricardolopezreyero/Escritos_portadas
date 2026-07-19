@@ -664,6 +664,7 @@ canvas {
         <button class="btn" id="copyBtn" type="button">Copiar PNG</button>
         <button class="btn" id="download1xBtn" type="button">Descargar 1X</button>
         <button class="btn primary" id="download2xBtn" type="button">Descargar 2X</button>
+        <button class="btn" id="githubConfigBtn" type="button">GitHub</button>
         <button class="btn install" id="installAppBtn" type="button" hidden>Instalar app</button>
       </div>
       <div class="action-measure">600 x 400 px - 1200 x 800 px</div>
@@ -820,6 +821,8 @@ const CANVAS_HEIGHT = 400
 const PREVIEW_SCALE = 2
 const HISTORY_KEY = 'escritos-portadas:used-seeds:v1'
 const PROJECT_KEY = 'escritos-portadas:project:v1'
+const UPLOAD_CONFIG_KEY = 'escritos-portadas:github-upload:v1'
+const DEFAULT_UPLOAD_ENDPOINT = ''
 const BLOG_BASE_URL = 'https://escritos.ricardolopezreyero.com/post/'
 const DEFAULT_AUTHOR = 'Ricardo Lopez Reyero'
 const PIXEL_SIGNATURE_MAGIC = 'RLR1'
@@ -930,6 +933,7 @@ const els = {
   seoGrid: document.querySelector('#seoGrid'),
   seoStatus: document.querySelector('#seoStatus'),
   copyAllSeo: document.querySelector('#copyAllSeoBtn'),
+  githubConfig: document.querySelector('#githubConfigBtn'),
   installApp: document.querySelector('#installAppBtn'),
   toast: document.querySelector('#toast'),
 }
@@ -1924,14 +1928,92 @@ function renderSeo() {
   els.copyAllSeo.disabled = empty
 }
 
-function download(scale) {
+function readUploadConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(UPLOAD_CONFIG_KEY) || '{}')
+    return {
+      endpoint: saved.endpoint || DEFAULT_UPLOAD_ENDPOINT,
+      key: saved.key || '',
+    }
+  } catch {
+    return { endpoint: DEFAULT_UPLOAD_ENDPOINT, key: '' }
+  }
+}
+
+function saveUploadConfig(config) {
+  localStorage.setItem(UPLOAD_CONFIG_KEY, JSON.stringify(config))
+}
+
+function configureGithubUpload() {
+  const current = readUploadConfig()
+  const endpoint = window.prompt('URL del Worker de subida a GitHub', current.endpoint || '')
+  if (endpoint === null) return
+  const key = window.prompt('Clave de subida del Worker', current.key || '')
+  if (key === null) return
+  saveUploadConfig({ endpoint: endpoint.trim(), key: key.trim() })
+  toast(endpoint.trim() && key.trim() ? 'GitHub configurado' : 'GitHub desactivado')
+}
+
+function buildUploadPath(fileName) {
+  const date = new Date()
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  const ms = String(date.getMilliseconds()).padStart(3, '0')
+  return `portadas/${year}/${month}/${day}-${hours}${minutes}${seconds}-${ms}-${fileName}`
+}
+
+async function uploadCanvasToGithub(canvas, fileName, scale) {
+  const config = readUploadConfig()
+  if (!config.endpoint || !config.key) return
+
+  const dataUrl = canvas.toDataURL('image/png')
+  const imageBase64 = dataUrl.split(',')[1]
+  const slug = state.seo?.slug || toSlug(state.title || 'portada')
+  const response = await fetch(config.endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Upload-Key': config.key,
+    },
+    body: JSON.stringify({
+      fileName,
+      path: buildUploadPath(fileName),
+      imageBase64,
+      title: state.title,
+      slug,
+      scale,
+      width: CANVAS_WIDTH * scale,
+      height: CANVAS_HEIGHT * scale,
+      signature: PIXEL_SIGNATURE_TEXT,
+    }),
+  })
+
+  if (!response.ok) {
+    const detail = await response.text()
+    throw new Error(detail || `GitHub upload failed ${response.status}`)
+  }
+}
+
+async function download(scale) {
   const canvas = document.createElement('canvas')
   renderToCanvas(canvas, scale, state)
   const link = document.createElement('a')
   const title = state.gradientOnly || !state.title.trim() ? 'degradado-premium' : state.title
-  link.download = `${sanitizeFileName(title)}-${CANVAS_WIDTH * scale}x${CANVAS_HEIGHT * scale}.png`
+  const fileName = `${sanitizeFileName(title)}-${CANVAS_WIDTH * scale}x${CANVAS_HEIGHT * scale}.png`
+  link.download = fileName
   link.href = canvas.toDataURL('image/png')
   link.click()
+
+  uploadCanvasToGithub(canvas, fileName, scale)
+    .then(() => {
+      const config = readUploadConfig()
+      if (config.endpoint && config.key) toast('Descargado y subido a GitHub')
+    })
+    .catch(() => toast('Descargado. GitHub no subio'))
 }
 
 async function copyPng() {
@@ -2127,6 +2209,7 @@ function bind() {
 
   document.querySelector('#download1xBtn').addEventListener('click', () => download(1))
   document.querySelector('#download2xBtn').addEventListener('click', () => download(2))
+  els.githubConfig.addEventListener('click', configureGithubUpload)
   document.querySelector('#copyBtn').addEventListener('click', () => {
     copyPng().catch(() => {
       download(2)

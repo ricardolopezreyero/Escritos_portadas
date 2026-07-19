@@ -12,6 +12,7 @@ Generador de portadas para el blog **Escritos Ricardo Lopez Reyero**.
 - Guarda automaticamente el ultimo proyecto en este navegador para reabrirlo como lo dejaste.
 - Inserta una firma invisible en pixeles: `Ricardo López Reyero` / `RLR`.
 - Usa el logo de Ricardo Lopez Reyero, favicon RLR y se puede instalar como app web en Mac.
+- Puede subir cada PNG descargado a GitHub mediante un Cloudflare Worker seguro.
 - No requiere backend ni instalacion: abre `index.html` o publicalo en GitHub Pages.
 
 ## Uso
@@ -30,3 +31,28 @@ Este repo puede publicarse directo en GitHub Pages porque es una pagina estatica
 ## App en Mac
 
 En Chrome aparece el boton `Instalar app` cuando el navegador habilita la instalacion. En Safari de macOS se puede usar `Compartir > Agregar al Dock`.
+
+## Subida segura a GitHub
+
+La app estatica no guarda tokens. Para que cada descarga tambien suba la imagen al repo:
+
+1. Crea un token fine-grained de GitHub con acceso solo a `ricardolopezreyero/Escritos_portadas` y permiso `Contents: Read and write`.
+2. Entra a la carpeta `worker`.
+3. Ejecuta:
+
+```bash
+wrangler secret put GITHUB_TOKEN
+wrangler secret put UPLOAD_KEY
+wrangler deploy
+```
+
+4. Copia la URL del Worker.
+5. En la app pulsa `GitHub` y pega:
+   - URL del Worker.
+   - La misma `UPLOAD_KEY`.
+
+Desde ese momento, `Descargar 1X` y `Descargar 2X` tambien intentan guardar el PNG en:
+
+```text
+portadas/YYYY/MM/DD-HHMMSS-ms-nombre-del-archivo.png
+```
