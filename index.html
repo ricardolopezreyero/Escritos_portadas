@@ -124,6 +124,16 @@ button {
   box-shadow: 0 14px 34px rgba(23, 92, 255, 0.28);
 }
 
+.btn.compact {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.btn.full {
+  width: 100%;
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(310px, 390px) minmax(0, 1fr);
@@ -184,6 +194,10 @@ button {
   min-height: 104px;
   line-height: 1.42;
   resize: vertical;
+}
+
+.field textarea.article-input {
+  min-height: 230px;
 }
 
 .field textarea:focus,
@@ -365,6 +379,107 @@ canvas {
   border-radius: 7px;
 }
 
+.seo-board {
+  width: min(100%, 900px);
+  display: grid;
+  gap: 12px;
+}
+
+.seo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.seo-head h2 {
+  margin: 0;
+  color: #202737;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.seo-head span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.seo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.seo-item {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  border: 1px solid rgba(20, 27, 41, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 11px;
+}
+
+.seo-item.wide {
+  grid-column: 1 / -1;
+}
+
+.seo-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.seo-item label {
+  color: #343c4d;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.seo-value {
+  min-height: 22px;
+  overflow-wrap: anywhere;
+  color: #182032;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.seo-value.empty {
+  color: var(--muted);
+}
+
+.keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.keyword-list span {
+  border: 1px solid rgba(23, 92, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(23, 92, 255, 0.06);
+  color: #244064;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.order-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #2a3346;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.order-list b {
+  color: #121827;
+}
+
 .toast {
   position: fixed;
   left: 50%;
@@ -433,6 +548,15 @@ canvas {
     flex-direction: column;
     gap: 5px;
   }
+
+  .seo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .seo-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 </style>
 </head>
@@ -454,7 +578,16 @@ canvas {
     <aside class="panel">
       <div class="controls">
         <section class="group">
-          <div class="group-title">Texto</div>
+          <div class="group-title">Escrito</div>
+          <div class="field">
+            <label for="articleInput">Pega aqui el articulo</label>
+            <textarea id="articleInput" class="article-input" placeholder="Pega tu escrito completo. La herramienta supone titulo, slug, categoria, descripcion SEO, palabras clave y alt text."></textarea>
+          </div>
+          <button class="btn primary full" id="analyzeBtn" type="button">Analizar y llenar SEO</button>
+        </section>
+
+        <section class="group">
+          <div class="group-title">Portada</div>
           <div class="field">
             <label for="titleInput">Titulo</label>
             <textarea id="titleInput" maxlength="130">Como hacer un gran trabajo</textarea>
@@ -544,6 +677,16 @@ canvas {
         </div>
       </div>
       <div class="variant-grid" id="variantGrid"></div>
+      <section class="seo-board" aria-live="polite">
+        <div class="seo-head">
+          <div>
+            <h2>SEO express</h2>
+            <span id="seoStatus">Pega un escrito y analiza</span>
+          </div>
+          <button class="btn compact" id="copyAllSeoBtn" type="button">Copiar todo</button>
+        </div>
+        <div class="seo-grid" id="seoGrid"></div>
+      </section>
     </section>
   </main>
 </div>
@@ -555,6 +698,30 @@ const CANVAS_WIDTH = 600
 const CANVAS_HEIGHT = 400
 const PREVIEW_SCALE = 2
 const HISTORY_KEY = 'escritos-portadas:used-seeds:v1'
+const BLOG_BASE_URL = 'https://escritos.ricardolopezreyero.com/post/'
+const DEFAULT_AUTHOR = 'Ricardo Lopez Reyero'
+
+const stopWords = new Set([
+  'ademas', 'algo', 'algun', 'alguna', 'algunas', 'algunos', 'ante', 'antes', 'aqui', 'cada', 'casi',
+  'como', 'con', 'contra', 'cual', 'cuando', 'desde', 'donde', 'dos', 'durante', 'ella', 'ellas',
+  'ellos', 'entre', 'eran', 'eres', 'esta', 'estas', 'este', 'esto', 'estos', 'haber', 'hace', 'hacen',
+  'hacer', 'hacia', 'hasta', 'hay', 'las', 'los', 'mas', 'mismo', 'mucho', 'muy', 'nada', 'nos',
+  'otra', 'otras', 'otro', 'otros', 'para', 'pero', 'poco', 'por', 'porque', 'puede', 'pueden',
+  'que', 'quien', 'sea', 'ser', 'sobre', 'solo', 'son', 'sus', 'tambien', 'tan', 'tener', 'tiene',
+  'tienen', 'todo', 'todos', 'tras', 'una', 'unas', 'uno', 'unos', 'vez',
+])
+
+const categoryRules = [
+  { name: 'IA', terms: ['ia', 'inteligencia', 'artificial', 'chatgpt', 'openai', 'modelo', 'prompt', 'automatizacion'] },
+  { name: 'Tecnologia', terms: ['software', 'app', 'datos', 'codigo', 'internet', 'plataforma', 'digital', 'sistema'] },
+  { name: 'Negocios', terms: ['negocio', 'empresa', 'ventas', 'cliente', 'mercado', 'dinero', 'producto', 'estrategia'] },
+  { name: 'Educacion', terms: ['educacion', 'escuela', 'aprender', 'maestro', 'alumno', 'estudiante', 'clase', 'universidad'] },
+  { name: 'Productividad', terms: ['trabajo', 'habito', 'tiempo', 'proyecto', 'enfoque', 'rutina', 'prioridad', 'hacer'] },
+  { name: 'Liderazgo', terms: ['lider', 'liderazgo', 'equipo', 'decision', 'responsabilidad', 'direccion', 'cultura'] },
+  { name: 'Sostenibilidad', terms: ['sostenible', 'sostenibilidad', 'clima', 'energia', 'plastico', 'agua', 'ambiental'] },
+  { name: 'Cultura', terms: ['cultura', 'arte', 'historia', 'libro', 'lectura', 'musica', 'sociedad'] },
+  { name: 'Ideas', terms: ['idea', 'pensar', 'pregunta', 'curiosidad', 'mente', 'conocimiento', 'ensayo'] },
+]
 
 const palettes = [
   { id: 'random', name: 'Random premium', colors: [] },
@@ -580,9 +747,12 @@ const state = {
   seed: '',
   born: null,
   variants: [],
+  seo: null,
 }
 
 const els = {
+  article: document.querySelector('#articleInput'),
+  analyze: document.querySelector('#analyzeBtn'),
   title: document.querySelector('#titleInput'),
   showTitle: document.querySelector('#showTitleInput'),
   gradientOnly: document.querySelector('#gradientOnlyInput'),
@@ -597,6 +767,9 @@ const els = {
   minuteLabel: document.querySelector('#minuteLabel'),
   deciLabel: document.querySelector('#deciLabel'),
   variants: document.querySelector('#variantGrid'),
+  seoGrid: document.querySelector('#seoGrid'),
+  seoStatus: document.querySelector('#seoStatus'),
+  copyAllSeo: document.querySelector('#copyAllSeoBtn'),
   toast: document.querySelector('#toast'),
 }
 
@@ -1005,6 +1178,296 @@ function sanitizeFileName(value) {
     .slice(0, 70) || 'escritos-portada'
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
+function cleanText(value) {
+  return String(value || '')
+    .replace(/\r/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+function toSlug(value) {
+  return normalizeText(value)
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 82) || 'escrito'
+}
+
+function splitSentences(text) {
+  return cleanText(text)
+    .replace(/\n+/g, ' ')
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean)
+}
+
+function looksLikeTitle(line) {
+  const words = line.split(/\s+/).filter(Boolean)
+  if (words.length < 3 || words.length > 16) return false
+  if (line.length > 92) return false
+  return !/[.!?;:]$/.test(line)
+}
+
+function inferTitle(text) {
+  const lines = cleanText(text)
+    .split('\n')
+    .map((line) => line.replace(/^#+\s*/, '').trim())
+    .filter(Boolean)
+
+  const firstTitle = lines.find(looksLikeTitle)
+  if (firstTitle) return firstTitle
+
+  const firstSentence = splitSentences(text)[0] || ''
+  if (!firstSentence) return 'Nuevo escrito'
+
+  const words = firstSentence.split(/\s+/).filter(Boolean)
+  return words.slice(0, 12).join(' ').replace(/[,.!?;:]$/, '')
+}
+
+function keywordsFromText(text, title) {
+  const source = normalizeText(`${title} ${text}`)
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((word) => word.length > 3 && !stopWords.has(word))
+
+  const score = new Map()
+  source.forEach((word) => score.set(word, (score.get(word) || 0) + 1))
+
+  for (let i = 0; i < source.length - 1; i += 1) {
+    const first = source[i]
+    const second = source[i + 1]
+    if (first === second) continue
+    const phrase = `${first} ${second}`
+    score.set(phrase, (score.get(phrase) || 0) + 2.2)
+  }
+
+  categoryRules.forEach((rule) => {
+    rule.terms.forEach((term) => {
+      if (source.includes(term)) {
+        score.set(term, (score.get(term) || 0) + 2)
+      }
+    })
+  })
+
+  return [...score.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([word]) => word)
+    .filter((word, index, list) => {
+      if (index > 20) return false
+      return !list.slice(0, index).some((prev) => prev.includes(word) || word.includes(prev))
+    })
+    .slice(0, 12)
+}
+
+function inferCategory(text, keywords) {
+  const source = normalizeText(`${text} ${keywords.join(' ')}`)
+  let best = { name: 'Generales', score: 0 }
+
+  categoryRules.forEach((rule) => {
+    const score = rule.terms.reduce((sum, term) => {
+      const matches = source.match(new RegExp(`\\b${term}\\b`, 'g'))
+      return sum + (matches ? matches.length : 0)
+    }, 0)
+    if (score > best.score) best = { name: rule.name, score }
+  })
+
+  return best.name
+}
+
+function buildDescription(text, title) {
+  const titleNorm = normalizeText(title)
+  const sentences = splitSentences(text).filter((sentence) => normalizeText(sentence) !== titleNorm)
+  let description = sentences.slice(0, 2).join(' ')
+
+  if (!description) {
+    description = `Reflexion sobre ${title}.`
+  }
+
+  if (description.length > 250) {
+    description = description.slice(0, 247).replace(/\s+\S*$/, '') + '...'
+  }
+
+  return description
+}
+
+function analyzeArticle() {
+  const article = cleanText(els.article.value)
+  const typedTitle = cleanText(els.title.value)
+  const title = article ? inferTitle(article) : typedTitle || 'Nuevo escrito'
+  const finalTitle = typedTitle && typedTitle !== 'Como hacer un gran trabajo' && !article ? typedTitle : title
+  const slug = toSlug(finalTitle)
+  const keywords = keywordsFromText(article || finalTitle, finalTitle)
+  const category = inferCategory(article || finalTitle, keywords)
+  const description = buildDescription(article || finalTitle, finalTitle)
+  const canonical = `${BLOG_BASE_URL}${slug}`
+  const alt = `Portada del escrito "${finalTitle}" de ${DEFAULT_AUTHOR}`
+  const wordCount = article ? article.split(/\s+/).filter(Boolean).length : 0
+
+  state.seo = {
+    title: finalTitle,
+    slug,
+    category,
+    author: DEFAULT_AUTHOR,
+    canonical,
+    keywords,
+    description,
+    alt,
+    status: 'Borrador',
+    wordCount,
+  }
+
+  els.title.value = finalTitle
+  configFromInputs()
+  render()
+  renderVariants()
+  renderSeo()
+  toast('SEO listo')
+}
+
+function fieldText(key) {
+  if (!state.seo) return ''
+  if (key === 'keywords') return state.seo.keywords.join(', ')
+  if (key === 'order') return buildCopyAll()
+  return state.seo[key] || ''
+}
+
+async function copyText(value) {
+  const text = String(value || '')
+  if (!text) return
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    await navigator.clipboard.writeText(text)
+    toast('Copiado')
+    return
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'absolute'
+  textarea.style.left = '-9999px'
+  document.body.appendChild(textarea)
+  textarea.select()
+  document.execCommand('copy')
+  textarea.remove()
+  toast('Copiado')
+}
+
+function buildCopyAll() {
+  if (!state.seo) return ''
+  return [
+    `Estado: ${state.seo.status}`,
+    `Slug de URL: ${state.seo.slug}`,
+    `Categoria: ${state.seo.category}`,
+    `Autor: ${state.seo.author}`,
+    `Enlace canonico: ${state.seo.canonical}`,
+    `Titulo: ${state.seo.title}`,
+    `Texto alternativo portada: ${state.seo.alt}`,
+    `Descripcion de la publicacion: ${state.seo.description}`,
+    `Palabras clave: ${state.seo.keywords.join(', ')}`,
+  ].join('\n')
+}
+
+function renderSeo() {
+  const empty = !state.seo
+  const fields = empty
+    ? [
+        ['slug', 'Slug de URL', 'Aun sin analizar'],
+        ['category', 'Categoria', 'Aun sin analizar'],
+        ['title', 'Titulo', 'Aun sin analizar'],
+        ['description', 'Descripcion', 'Pega el escrito y pulsa analizar.'],
+      ]
+    : [
+        ['status', 'Publicar o programar', state.seo.status],
+        ['slug', 'Slug de URL', state.seo.slug],
+        ['category', 'Categoria', state.seo.category],
+        ['author', 'Autor', state.seo.author],
+        ['canonical', 'Enlace canonico', state.seo.canonical, true],
+        ['title', 'Titulo', state.seo.title, true],
+        ['alt', 'Texto alternativo', state.seo.alt, true],
+        ['description', 'Descripcion', state.seo.description, true],
+        ['keywords', 'Palabras clave', state.seo.keywords, true],
+        ['order', 'Orden para pegar', '', true],
+      ]
+
+  els.seoGrid.innerHTML = ''
+  fields.forEach(([key, label, value, wide]) => {
+    const item = document.createElement('article')
+    item.className = `seo-item${wide ? ' wide' : ''}`
+
+    const head = document.createElement('div')
+    head.className = 'seo-item-head'
+
+    const labelEl = document.createElement('label')
+    labelEl.textContent = label
+    head.appendChild(labelEl)
+
+    const copyButton = document.createElement('button')
+    copyButton.className = 'btn compact'
+    copyButton.type = 'button'
+    copyButton.textContent = 'Copiar'
+    copyButton.disabled = empty
+    copyButton.addEventListener('click', () => copyText(fieldText(key)))
+    head.appendChild(copyButton)
+    item.appendChild(head)
+
+    if (key === 'keywords' && !empty) {
+      const list = document.createElement('div')
+      list.className = 'keyword-list'
+      state.seo.keywords.forEach((keyword) => {
+        const chip = document.createElement('span')
+        chip.textContent = keyword
+        list.appendChild(chip)
+      })
+      item.appendChild(list)
+    } else if (key === 'order' && !empty) {
+      const list = document.createElement('ol')
+      list.className = 'order-list'
+      ;[
+        ['Slug de URL', state.seo.slug],
+        ['Categoria', state.seo.category],
+        ['Autor', state.seo.author],
+        ['Enlace canonico', state.seo.canonical],
+        ['Titulo', state.seo.title],
+        ['Imagen de portada', 'descarga PNG 2X y subelo al campo de portada'],
+        ['Texto alternativo', state.seo.alt],
+        ['Descripcion', state.seo.description],
+        ['Palabras clave', state.seo.keywords.join(', ')],
+      ].forEach(([name, content]) => {
+        const li = document.createElement('li')
+        const strong = document.createElement('b')
+        strong.textContent = `${name}:`
+        li.appendChild(strong)
+        li.append(' ')
+        li.append(document.createTextNode(content))
+        list.appendChild(li)
+      })
+      item.appendChild(list)
+    } else {
+      const valueEl = document.createElement('div')
+      valueEl.className = `seo-value${empty ? ' empty' : ''}`
+      valueEl.textContent = Array.isArray(value) ? value.join(', ') : value
+      item.appendChild(valueEl)
+    }
+
+    els.seoGrid.appendChild(item)
+  })
+
+  els.seoStatus.textContent = empty
+    ? 'Pega un escrito y analiza'
+    : `${state.seo.wordCount || 'Sin'} palabras detectadas`
+  els.copyAllSeo.disabled = empty
+}
+
 function download(scale) {
   const canvas = document.createElement('canvas')
   renderToCanvas(canvas, scale, state)
@@ -1059,6 +1522,17 @@ function initSegmented(groupId, key, dataAttr) {
 }
 
 function bind() {
+  let analyzeTimer = 0
+
+  els.article.addEventListener('input', () => {
+    clearTimeout(analyzeTimer)
+    if (els.article.value.trim().length < 80) return
+    analyzeTimer = setTimeout(analyzeArticle, 650)
+  })
+
+  els.analyze.addEventListener('click', analyzeArticle)
+  els.copyAllSeo.addEventListener('click', () => copyText(buildCopyAll()))
+
   ;[els.title, els.showTitle, els.gradientOnly, els.palette, els.detail, els.grain, els.softness].forEach((input) => {
     input.addEventListener('input', () => {
       syncTitleVisibility()
@@ -1091,6 +1565,7 @@ initPaletteOptions()
 bind()
 configFromInputs()
 syncTitleVisibility()
+renderSeo()
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(buildVariantSet)
 } else {
