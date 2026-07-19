@@ -7,6 +7,7 @@ Generador de portadas para el blog **Escritos Ricardo Lopez Reyero**.
 - Cada portada nace con una semilla unica basada en minuto, segundo, decima de segundo, milisegundo y contador local.
 - Puede exportar solo el degradado premium o agregar titulo.
 - Analiza el escrito y prepara titulo, slug, categoria, canonical, descripcion SEO, alt text y palabras clave.
+- Genera palabras clave tipo Google: frases buscables, entidades, keyword principal e intencion de busqueda.
 - Incluye botones de copiar por campo y un bloque completo en el orden de publicacion del blog.
 - Guarda automaticamente el ultimo proyecto en este navegador para reabrirlo como lo dejaste.
 - Inserta una firma invisible en pixeles: `Ricardo López Reyero` / `RLR`.

@@ -826,6 +826,8 @@ const PIXEL_SIGNATURE_MAGIC = 'RLR1'
 const PIXEL_SIGNATURE_TEXT = 'Ricardo López Reyero|RLR'
 
 const stopWords = new Set([
+  'a', 'al', 'de', 'e', 'el', 'en', 'es', 'la', 'le', 'les', 'lo', 'me', 'mi', 'o', 'se', 'su',
+  'te', 'tu', 'un', 'y',
   'ademas', 'algo', 'algun', 'alguna', 'algunas', 'algunos', 'ante', 'antes', 'aqui', 'cada', 'casi',
   'como', 'con', 'contra', 'cual', 'cuando', 'desde', 'donde', 'dos', 'durante', 'ella', 'ellas',
   'ellos', 'entre', 'eran', 'eres', 'esta', 'estas', 'este', 'esto', 'estos', 'haber', 'hace', 'hacen',
@@ -833,7 +835,31 @@ const stopWords = new Set([
   'otra', 'otras', 'otro', 'otros', 'para', 'pero', 'poco', 'por', 'porque', 'puede', 'pueden',
   'que', 'quien', 'sea', 'ser', 'sobre', 'solo', 'son', 'sus', 'tambien', 'tan', 'tener', 'tiene',
   'tienen', 'todo', 'todos', 'tras', 'una', 'unas', 'uno', 'unos', 'vez',
+  'ahi', 'aun', 'aunque', 'del', 'debe', 'deben', 'dejar', 'dentro', 'despues', 'dicho', 'dices',
+  'digo', 'dije', 'dice', 'dicen', 'dio', 'ese', 'esa', 'esas', 'eso', 'esos', 'estaba', 'estaban',
+  'estado', 'estan', 'estar', 'estas', 'estoy', 'fin', 'fue', 'fuera', 'fueron', 'han', 'hemos',
+  'hizo', 'igual', 'incluso', 'lado', 'manera', 'menos', 'mientras', 'mis', 'nuestra', 'nuestras',
+  'nuestro', 'nuestros', 'nunca', 'pues', 'sido', 'siempre', 'sin', 'sino', 'toda', 'todas',
+  'tus', 'tuyo', 'tuya', 'usted', 'ustedes', 'van', 'voy',
 ])
+
+const seoGenericWords = new Set([
+  'algo', 'alguien', 'articulo', 'bien', 'cosa', 'cosas', 'demasiado', 'forma', 'general', 'gran',
+  'hacer', 'idea', 'ideas', 'mejor', 'mundo', 'muchas', 'muchos', 'parte', 'personas', 'poder', 'preguntas', 'probable',
+  'probablemente', 'puedes', 'pueden', 'quieres', 'saber', 'tema', 'tener', 'tienes', 'trabajar',
+  'trabajo', 'vida',
+])
+
+const seoIntentStarts = new Set([
+  'como', 'cuando', 'donde', 'guia', 'ideas', 'por', 'porque', 'que', 'razones', 'ventajas',
+])
+
+const seoIntentPatterns = [
+  { test: /\bcomo\b|\bguia\b|\bpasos\b|\bmetodo\b/, label: 'Informacional practico' },
+  { test: /\bpor que\b|\bporque\b|\brazones\b|\bcausas\b/, label: 'Informacional explicativo' },
+  { test: /\bmejor\b|\bcomparar\b|\bcomparacion\b|\bvs\b|\bdiferencia\b/, label: 'Comparativo' },
+  { test: /\bcomprar\b|\bprecio\b|\bcosto\b|\bservicio\b|\bherramienta\b/, label: 'Comercial' },
+]
 
 const categoryRules = [
   { name: 'IA', terms: ['ia', 'inteligencia', 'artificial', 'chatgpt', 'openai', 'modelo', 'prompt', 'automatizacion'] },
@@ -1003,6 +1029,7 @@ function applySavedProject() {
 
   syncTitleVisibility()
   syncPositionControls()
+  ensureSeoCompleteness()
   renderSeo()
   return true
 }
@@ -1529,39 +1556,127 @@ function inferTitle(text) {
   return words.slice(0, 12).join(' ').replace(/[,.!?;:]$/, '')
 }
 
+function tokenizeSeo(text) {
+  return String(text || '')
+    .replace(/[“”]/g, '"')
+    .replace(/[’]/g, "'")
+    .match(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9]+/g)?.map((raw, index) => ({
+      raw,
+      lower: raw.toLowerCase(),
+      norm: normalizeText(raw),
+      index,
+    })) || []
+}
+
+function phraseFromTokens(tokens) {
+  return tokens.map((token) => token.lower).join(' ')
+}
+
+function normalizedPhrase(phrase) {
+  return normalizeText(phrase).replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function hasStrongSeoTerm(normWords) {
+  return normWords.some((word) => (
+    word.length > 4 &&
+    !stopWords.has(word) &&
+    !seoGenericWords.has(word)
+  ))
+}
+
+function isUsefulSeoPhrase(normWords) {
+  if (normWords.length < 2 || normWords.length > 5) return false
+  if (!hasStrongSeoTerm(normWords)) return false
+  if (normWords.every((word) => stopWords.has(word) || seoGenericWords.has(word))) return false
+  const first = normWords[0]
+  const last = normWords[normWords.length - 1]
+  if ((stopWords.has(first) && !seoIntentStarts.has(first)) || stopWords.has(last)) return false
+  if (normWords.filter((word) => seoGenericWords.has(word)).length >= Math.ceil(normWords.length * 0.75)) return false
+  return true
+}
+
+function addCandidate(score, display, points, source = 'texto') {
+  const norm = normalizedPhrase(display)
+  if (!norm) return
+  const words = norm.split(' ')
+  if (source !== 'titulo' && source !== 'entidad' && !isUsefulSeoPhrase(words)) return
+  const current = score.get(norm) || { display, score: 0, source }
+  current.score += points
+  if (display.length < current.display.length || source === 'titulo') {
+    current.display = display
+  }
+  current.source = current.source === 'titulo' ? current.source : source
+  score.set(norm, current)
+}
+
+function extractEntities(text) {
+  const matches = String(text || '').match(/\b[A-ZÁÉÍÓÚÜÑ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:\s+[A-ZÁÉÍÓÚÜÑ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+){1,3}\b/g) || []
+  const counts = new Map()
+  matches.forEach((match) => {
+    const clean = match.trim()
+    const norm = normalizedPhrase(clean)
+    if (!norm || norm.includes('ricardo lopez reyero')) return
+    counts.set(clean, (counts.get(clean) || 0) + 1)
+  })
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([entity]) => entity)
+    .slice(0, 8)
+}
+
+function isDuplicateKeyword(candidate, selected) {
+  const norm = normalizedPhrase(candidate)
+  return selected.some((item) => {
+    const other = normalizedPhrase(item)
+    return other === norm || other.includes(norm) || norm.includes(other)
+  })
+}
+
+function inferSearchIntent(title, text) {
+  const source = normalizedPhrase(`${title} ${splitSentences(text).slice(0, 3).join(' ')}`)
+  const match = seoIntentPatterns.find((pattern) => pattern.test.test(source))
+  return match ? match.label : 'Informacional'
+}
+
 function keywordsFromText(text, title) {
-  const source = normalizeText(`${title} ${text}`)
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter((word) => word.length > 3 && !stopWords.has(word))
-
   const score = new Map()
-  source.forEach((word) => score.set(word, (score.get(word) || 0) + 1))
+  const titleTokens = tokenizeSeo(title)
+  const bodyTokens = tokenizeSeo(text)
+  const allTokens = [...titleTokens, ...bodyTokens]
+  const titlePhrase = phraseFromTokens(titleTokens).trim()
 
-  for (let i = 0; i < source.length - 1; i += 1) {
-    const first = source[i]
-    const second = source[i + 1]
-    if (first === second) continue
-    const phrase = `${first} ${second}`
-    score.set(phrase, (score.get(phrase) || 0) + 2.2)
+  if (titlePhrase && titleTokens.length <= 8) {
+    addCandidate(score, titlePhrase, 28, 'titulo')
   }
 
-  categoryRules.forEach((rule) => {
-    rule.terms.forEach((term) => {
-      if (source.includes(term)) {
-        score.set(term, (score.get(term) || 0) + 2)
-      }
-    })
+  extractEntities(`${title}\n${text}`).forEach((entity) => {
+    addCandidate(score, entity, 18, 'entidad')
   })
 
-  return [...score.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([word]) => word)
-    .filter((word, index, list) => {
-      if (index > 20) return false
-      return !list.slice(0, index).some((prev) => prev.includes(word) || word.includes(prev))
+  for (let size = 2; size <= 5; size += 1) {
+    for (let i = 0; i <= allTokens.length - size; i += 1) {
+      const slice = allTokens.slice(i, i + size)
+      const normWords = slice.map((token) => token.norm)
+      if (!isUsefulSeoPhrase(normWords)) continue
+      const display = phraseFromTokens(slice)
+      const inTitle = i < titleTokens.length
+      const earlyBoost = i < Math.max(80, allTokens.length * 0.12) ? 2.4 : 1
+      const lengthBoost = size === 2 ? 1.1 : size === 3 ? 1.55 : 1.35
+      const specificBoost = normWords.filter((word) => !stopWords.has(word) && !seoGenericWords.has(word)).length
+      addCandidate(score, display, (2.8 + specificBoost) * lengthBoost * earlyBoost + (inTitle ? 8 : 0))
+    }
+  }
+
+  const selected = []
+  ;[...score.values()]
+    .sort((a, b) => b.score - a.score || a.display.localeCompare(b.display))
+    .forEach((candidate) => {
+      if (selected.length >= 12) return
+      if (isDuplicateKeyword(candidate.display, selected)) return
+      selected.push(candidate.display)
     })
-    .slice(0, 12)
+
+  return selected
 }
 
 function inferCategory(text, keywords) {
@@ -1581,18 +1696,42 @@ function inferCategory(text, keywords) {
 
 function buildDescription(text, title) {
   const titleNorm = normalizeText(title)
-  const sentences = splitSentences(text).filter((sentence) => normalizeText(sentence) !== titleNorm)
-  let description = sentences.slice(0, 2).join(' ')
+  const bodyWithoutTitle = cleanText(text)
+    .split('\n')
+    .filter((line) => normalizeText(line.trim()) !== titleNorm)
+    .join('\n')
+  const sentences = splitSentences(bodyWithoutTitle)
+    .filter((sentence) => normalizeText(sentence) !== titleNorm)
+    .filter((sentence) => sentence.length > 45)
+  let description = sentences.find((sentence) => normalizedPhrase(sentence).split(' ').filter((word) => !stopWords.has(word)).length >= 8) || ''
 
   if (!description) {
-    description = `Reflexion sobre ${title}.`
+    description = `Reflexion clara sobre ${title}, sus ideas principales y por que importan.`
   }
 
-  if (description.length > 250) {
-    description = description.slice(0, 247).replace(/\s+\S*$/, '') + '...'
+  if (description.length < 105 && sentences[1]) {
+    description = `${description} ${sentences[1]}`
+  }
+
+  if (description.length > 155) {
+    description = description.slice(0, 152).replace(/\s+\S*$/, '') + '...'
   }
 
   return description
+}
+
+function ensureSeoCompleteness() {
+  if (!state.seo) return
+  const keywords = Array.isArray(state.seo.keywords) && state.seo.keywords.length
+    ? state.seo.keywords
+    : keywordsFromText(els.article.value || state.seo.title || state.title, state.seo.title || state.title)
+
+  state.seo.keywords = keywords
+  state.seo.primaryKeyword = state.seo.primaryKeyword || keywords[0] || state.seo.title || state.title
+  state.seo.searchIntent = state.seo.searchIntent || inferSearchIntent(state.seo.title || state.title, els.article.value || '')
+  state.seo.internalTags = Array.isArray(state.seo.internalTags) && state.seo.internalTags.length
+    ? state.seo.internalTags
+    : keywords.filter((keyword) => normalizedPhrase(keyword).split(' ').length <= 3).slice(0, 7)
 }
 
 function analyzeArticle() {
@@ -1602,11 +1741,16 @@ function analyzeArticle() {
   const finalTitle = typedTitle && typedTitle !== 'Como hacer un gran trabajo' && !article ? typedTitle : title
   const slug = toSlug(finalTitle)
   const keywords = keywordsFromText(article || finalTitle, finalTitle)
+  const primaryKeyword = keywords[0] || finalTitle.toLowerCase()
+  const searchIntent = inferSearchIntent(finalTitle, article || finalTitle)
   const category = inferCategory(article || finalTitle, keywords)
   const description = buildDescription(article || finalTitle, finalTitle)
   const canonical = `${BLOG_BASE_URL}${slug}`
   const alt = `Portada del escrito "${finalTitle}" de ${DEFAULT_AUTHOR}`
   const wordCount = article ? article.split(/\s+/).filter(Boolean).length : 0
+  const internalTags = keywords
+    .filter((keyword) => normalizedPhrase(keyword).split(' ').length <= 3)
+    .slice(0, 7)
 
   state.seo = {
     title: finalTitle,
@@ -1614,12 +1758,16 @@ function analyzeArticle() {
     category,
     author: DEFAULT_AUTHOR,
     canonical,
+    primaryKeyword,
+    searchIntent,
     keywords,
+    internalTags,
     description,
     alt,
     status: 'Borrador',
     wordCount,
   }
+  ensureSeoCompleteness()
 
   els.title.value = finalTitle
   configFromInputs()
@@ -1632,7 +1780,9 @@ function analyzeArticle() {
 
 function fieldText(key) {
   if (!state.seo) return ''
+  ensureSeoCompleteness()
   if (key === 'keywords') return state.seo.keywords.join(', ')
+  if (key === 'internalTags') return state.seo.internalTags.join(', ')
   if (key === 'order') return buildCopyAll()
   return state.seo[key] || ''
 }
@@ -1660,6 +1810,7 @@ async function copyText(value) {
 
 function buildCopyAll() {
   if (!state.seo) return ''
+  ensureSeoCompleteness()
   return [
     `Estado: ${state.seo.status}`,
     `Slug de URL: ${state.seo.slug}`,
@@ -1667,9 +1818,12 @@ function buildCopyAll() {
     `Autor: ${state.seo.author}`,
     `Enlace canonico: ${state.seo.canonical}`,
     `Titulo: ${state.seo.title}`,
+    `Keyword principal: ${state.seo.primaryKeyword}`,
+    `Intencion de busqueda: ${state.seo.searchIntent}`,
     `Texto alternativo portada: ${state.seo.alt}`,
     `Descripcion de la publicacion: ${state.seo.description}`,
-    `Palabras clave: ${state.seo.keywords.join(', ')}`,
+    `Palabras clave Google: ${state.seo.keywords.join(', ')}`,
+    `Etiquetas internas: ${state.seo.internalTags.join(', ')}`,
   ].join('\n')
 }
 
@@ -1689,9 +1843,12 @@ function renderSeo() {
         ['author', 'Autor', state.seo.author],
         ['canonical', 'Enlace canonico', state.seo.canonical, true],
         ['title', 'Titulo', state.seo.title, true],
+        ['primaryKeyword', 'Keyword principal', state.seo.primaryKeyword],
+        ['searchIntent', 'Intencion Google', state.seo.searchIntent],
         ['alt', 'Texto alternativo', state.seo.alt, true],
         ['description', 'Descripcion', state.seo.description, true],
-        ['keywords', 'Palabras clave', state.seo.keywords, true],
+        ['keywords', 'Palabras clave Google', state.seo.keywords, true],
+        ['internalTags', 'Etiquetas internas', state.seo.internalTags, true],
         ['order', 'Orden para pegar', '', true],
       ]
 
@@ -1716,10 +1873,10 @@ function renderSeo() {
     head.appendChild(copyButton)
     item.appendChild(head)
 
-    if (key === 'keywords' && !empty) {
+    if ((key === 'keywords' || key === 'internalTags') && !empty) {
       const list = document.createElement('div')
       list.className = 'keyword-list'
-      state.seo.keywords.forEach((keyword) => {
+      fieldText(key).split(', ').filter(Boolean).forEach((keyword) => {
         const chip = document.createElement('span')
         chip.textContent = keyword
         list.appendChild(chip)
@@ -1734,10 +1891,13 @@ function renderSeo() {
         ['Autor', state.seo.author],
         ['Enlace canonico', state.seo.canonical],
         ['Titulo', state.seo.title],
+        ['Keyword principal', state.seo.primaryKeyword],
+        ['Intencion Google', state.seo.searchIntent],
         ['Imagen de portada', 'descarga PNG 2X y subelo al campo de portada'],
         ['Texto alternativo', state.seo.alt],
         ['Descripcion', state.seo.description],
-        ['Palabras clave', state.seo.keywords.join(', ')],
+        ['Palabras clave Google', state.seo.keywords.join(', ')],
+        ['Etiquetas internas', state.seo.internalTags.join(', ')],
       ].forEach(([name, content]) => {
         const li = document.createElement('li')
         const strong = document.createElement('b')
