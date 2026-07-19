@@ -1,5 +1,7 @@
 # Escritos Portadas
 
+[Abrir generador](https://ricardolopezreyero.github.io/Escritos_portadas/)
+
 Generador de portadas para el blog **Escritos Ricardo Lopez Reyero**.
 
 - Medida base: `600 x 400 px`.
@@ -52,3 +54,7 @@ Desde ese momento, `Descargar 1X` y `Descargar 2X` tambien intentan guardar el P
 ```text
 portadas/YYYY/MM/DD-HHMMSS-ms-nombre-del-archivo.png
 ```
+
+## URL
+
+[Abrir generador](https://ricardolopezreyero.github.io/Escritos_portadas/)
