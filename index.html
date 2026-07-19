@@ -817,8 +817,8 @@ const CANVAS_HEIGHT = 400
 const PREVIEW_SCALE = 2
 const HISTORY_KEY = 'escritos-portadas:used-seeds:v1'
 const PROJECT_KEY = 'escritos-portadas:project:v1'
-const UPLOAD_CONFIG_KEY = 'escritos-portadas:github-upload:v1'
-const DEFAULT_UPLOAD_ENDPOINT = ''
+const UPLOAD_ENDPOINT = 'https://escritos-portadas-upload.noisy-shape-4fc9.workers.dev'
+const UPLOAD_KEY = 'qP4H2lHTt96KAt3mam9OzMvQPIZByhHL'
 const BLOG_BASE_URL = 'https://escritos.ricardolopezreyero.com/post/'
 const DEFAULT_AUTHOR = 'Ricardo Lopez Reyero'
 const PIXEL_SIGNATURE_MAGIC = 'RLR1'
@@ -1937,18 +1937,6 @@ function renderSeo() {
   els.copyAllSeo.disabled = empty
 }
 
-function readUploadConfig() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(UPLOAD_CONFIG_KEY) || '{}')
-    return {
-      endpoint: saved.endpoint || DEFAULT_UPLOAD_ENDPOINT,
-      key: saved.key || '',
-    }
-  } catch {
-    return { endpoint: DEFAULT_UPLOAD_ENDPOINT, key: '' }
-  }
-}
-
 function buildUploadPath(fileName) {
   const date = new Date()
   const year = date.getFullYear()
@@ -1962,17 +1950,14 @@ function buildUploadPath(fileName) {
 }
 
 async function uploadCanvasToGithub(canvas, fileName, scale) {
-  const config = readUploadConfig()
-  if (!config.endpoint || !config.key) return
-
   const dataUrl = canvas.toDataURL('image/png')
   const imageBase64 = dataUrl.split(',')[1]
   const slug = state.seo?.slug || toSlug(state.title || 'portada')
-  const response = await fetch(config.endpoint, {
+  const response = await fetch(UPLOAD_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Upload-Key': config.key,
+      'X-Upload-Key': UPLOAD_KEY,
     },
     body: JSON.stringify({
       fileName,
@@ -2004,10 +1989,7 @@ async function download(scale) {
   link.click()
 
   uploadCanvasToGithub(canvas, fileName, scale)
-    .then(() => {
-      const config = readUploadConfig()
-      if (config.endpoint && config.key) toast('Descargado y subido a GitHub')
-    })
+    .then(() => toast('Descargado y subido a GitHub'))
     .catch(() => toast('Descargado. GitHub no subio'))
 }
 
