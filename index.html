@@ -1692,16 +1692,24 @@ function keywordsFromText(text, title) {
     }
   }
 
-  const selected = []
-  ;[...score.values()]
-    .sort((a, b) => b.score - a.score || a.display.localeCompare(b.display))
-    .forEach((candidate) => {
-      if (selected.length >= 12) return
-      if (isDuplicateKeyword(candidate.display, selected)) return
-      selected.push(candidate.display)
-    })
+  const ranked = [...score.values()].sort((a, b) => b.score - a.score || a.display.localeCompare(b.display))
 
-  return selected
+  const selected = []
+  ranked.forEach((candidate) => {
+    if (selected.length >= 12) return
+    if (isDuplicateKeyword(candidate.display, selected)) return
+    selected.push(candidate.display)
+  })
+
+  const internalTags = []
+  ranked.forEach((candidate) => {
+    if (internalTags.length >= 7) return
+    if (normalizedPhrase(candidate.display).split(' ').length > 3) return
+    if (isDuplicateKeyword(candidate.display, internalTags)) return
+    internalTags.push(candidate.display)
+  })
+
+  return { keywords: selected, internalTags }
 }
 
 function inferCategory(text, keywords) {
@@ -1720,22 +1728,24 @@ function inferCategory(text, keywords) {
 }
 
 function buildDescription(text, title) {
-  const titleNorm = normalizeText(title)
+  const titleNorm = normalizeText(title).replace(/[.!?]+$/, '')
   const bodyWithoutTitle = cleanText(text)
     .split('\n')
-    .filter((line) => normalizeText(line.trim()) !== titleNorm)
+    .filter((line) => normalizeText(line.trim()).replace(/[.!?]+$/, '') !== titleNorm)
     .join('\n')
   const sentences = splitSentences(bodyWithoutTitle)
-    .filter((sentence) => normalizeText(sentence) !== titleNorm)
+    .filter((sentence) => normalizeText(sentence).replace(/[.!?]+$/, '') !== titleNorm)
     .filter((sentence) => sentence.length > 45)
-  let description = sentences.find((sentence) => normalizedPhrase(sentence).split(' ').filter((word) => !stopWords.has(word)).length >= 8) || ''
+  const foundIndex = sentences.findIndex((sentence) => normalizedPhrase(sentence).split(' ').filter((word) => !stopWords.has(word)).length >= 8)
+  let description = foundIndex >= 0 ? sentences[foundIndex] : ''
 
   if (!description) {
     description = `Reflexion clara sobre ${title}, sus ideas principales y por que importan.`
   }
 
-  if (description.length < 105 && sentences[1]) {
-    description = `${description} ${sentences[1]}`
+  const nextSentence = foundIndex >= 0 ? sentences[foundIndex + 1] : null
+  if (description.length < 105 && nextSentence) {
+    description = `${description} ${nextSentence}`
   }
 
   if (description.length > 155) {
@@ -1747,16 +1757,20 @@ function buildDescription(text, title) {
 
 function ensureSeoCompleteness() {
   if (!state.seo) return
-  const keywords = Array.isArray(state.seo.keywords) && state.seo.keywords.length
-    ? state.seo.keywords
-    : keywordsFromText(els.article.value || state.seo.title || state.title, state.seo.title || state.title)
+  let keywords = state.seo.keywords
+  let derivedTags = null
+  if (!Array.isArray(keywords) || !keywords.length) {
+    const result = keywordsFromText(els.article.value || state.seo.title || state.title, state.seo.title || state.title)
+    keywords = result.keywords
+    derivedTags = result.internalTags
+  }
 
   state.seo.keywords = keywords
   state.seo.primaryKeyword = state.seo.primaryKeyword || keywords[0] || state.seo.title || state.title
   state.seo.searchIntent = state.seo.searchIntent || inferSearchIntent(state.seo.title || state.title, els.article.value || '')
   state.seo.internalTags = Array.isArray(state.seo.internalTags) && state.seo.internalTags.length
     ? state.seo.internalTags
-    : keywords.filter((keyword) => normalizedPhrase(keyword).split(' ').length <= 3).slice(0, 7)
+    : (derivedTags || keywords.filter((keyword) => normalizedPhrase(keyword).split(' ').length <= 3).slice(0, 7))
 }
 
 function analyzeArticle() {
@@ -1765,7 +1779,7 @@ function analyzeArticle() {
   const title = article ? inferTitle(article) : typedTitle || 'Nuevo escrito'
   const finalTitle = typedTitle && typedTitle !== 'Como hacer un gran trabajo' && !article ? typedTitle : title
   const slug = toSlug(finalTitle)
-  const keywords = keywordsFromText(article || finalTitle, finalTitle)
+  const { keywords, internalTags } = keywordsFromText(article || finalTitle, finalTitle)
   const primaryKeyword = keywords[0] || finalTitle.toLowerCase()
   const searchIntent = inferSearchIntent(finalTitle, article || finalTitle)
   const category = inferCategory(article || finalTitle, keywords)
@@ -1773,9 +1787,6 @@ function analyzeArticle() {
   const canonical = `${BLOG_BASE_URL}${slug}`
   const alt = `Portada del escrito "${finalTitle}" de ${DEFAULT_AUTHOR}`
   const wordCount = article ? article.split(/\s+/).filter(Boolean).length : 0
-  const internalTags = keywords
-    .filter((keyword) => normalizedPhrase(keyword).split(' ').length <= 3)
-    .slice(0, 7)
 
   state.seo = {
     title: finalTitle,
