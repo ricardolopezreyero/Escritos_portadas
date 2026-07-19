@@ -183,6 +183,7 @@ button {
 .layout {
   display: grid;
   grid-template-columns: minmax(310px, 390px) minmax(0, 1fr);
+  align-items: start;
   min-height: 0;
 }
 
@@ -354,16 +355,19 @@ button {
 .stage {
   min-width: 0;
   display: grid;
+  align-self: start;
+  align-items: start;
   align-content: start;
   justify-items: center;
-  gap: 14px;
-  padding: clamp(14px, 2.2vw, 26px) clamp(22px, 4vw, 48px) clamp(22px, 4vw, 48px);
+  gap: 12px;
+  padding: 8px clamp(18px, 3.2vw, 38px) clamp(18px, 3vw, 34px);
 }
 
 .canvas-shell {
   width: min(100%, 900px);
   display: grid;
-  gap: 12px;
+  gap: 8px;
+  margin-top: 0;
 }
 
 .canvas-meta {
