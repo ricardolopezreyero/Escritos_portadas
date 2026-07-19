@@ -782,6 +782,8 @@ const HISTORY_KEY = 'escritos-portadas:used-seeds:v1'
 const PROJECT_KEY = 'escritos-portadas:project:v1'
 const BLOG_BASE_URL = 'https://escritos.ricardolopezreyero.com/post/'
 const DEFAULT_AUTHOR = 'Ricardo Lopez Reyero'
+const PIXEL_SIGNATURE_MAGIC = 'RLR1'
+const PIXEL_SIGNATURE_TEXT = 'Ricardo López Reyero|RLR'
 
 const stopWords = new Set([
   'ademas', 'algo', 'algun', 'alguna', 'algunas', 'algunos', 'ante', 'antes', 'aqui', 'cada', 'casi',
@@ -1165,6 +1167,83 @@ function addNoise(targetCtx, width, height, seed, enabled) {
   targetCtx.putImageData(image, 0, 0)
 }
 
+function bytesToBits(bytes) {
+  const bits = []
+  bytes.forEach((byte) => {
+    for (let bit = 7; bit >= 0; bit -= 1) {
+      bits.push((byte >> bit) & 1)
+    }
+  })
+  return bits
+}
+
+function bitsToBytes(bits) {
+  const bytes = []
+  for (let i = 0; i < bits.length; i += 8) {
+    let byte = 0
+    for (let bit = 0; bit < 8; bit += 1) {
+      byte = (byte << 1) | (bits[i + bit] || 0)
+    }
+    bytes.push(byte)
+  }
+  return bytes
+}
+
+function signaturePixelIndex(width, height, bitIndex) {
+  const rowCount = 17
+  const row = heightSafeModulo(bitIndex * 7 + 3, rowCount)
+  const col = heightSafeModulo(bitIndex * 193 + 97, width)
+  const y = Math.max(0, height - rowCount + row)
+  return (y * width + col) * 4
+}
+
+function heightSafeModulo(value, divisor) {
+  return ((value % divisor) + divisor) % divisor
+}
+
+function addInvisiblePixelSignature(targetCtx, width, height) {
+  const encoder = new TextEncoder()
+  const payload = encoder.encode(`${PIXEL_SIGNATURE_MAGIC}:${PIXEL_SIGNATURE_TEXT}`)
+  const length = payload.length
+  const bytes = [length >> 8, length & 255, ...payload]
+  const bits = bytesToBits(bytes)
+  const image = targetCtx.getImageData(0, 0, width, height)
+  const data = image.data
+
+  bits.forEach((bit, index) => {
+    const pixelIndex = signaturePixelIndex(width, height, index)
+    if (pixelIndex + 2 >= data.length) return
+    data[pixelIndex + 2] = (data[pixelIndex + 2] & 254) | bit
+  })
+
+  targetCtx.putImageData(image, 0, 0)
+}
+
+function readInvisiblePixelSignature(canvas) {
+  const targetCtx = canvas.getContext('2d')
+  const { width, height } = canvas
+  const data = targetCtx.getImageData(0, 0, width, height).data
+  const lengthBits = []
+
+  for (let index = 0; index < 16; index += 1) {
+    lengthBits.push(data[signaturePixelIndex(width, height, index) + 2] & 1)
+  }
+
+  const [high, low] = bitsToBytes(lengthBits)
+  const length = (high << 8) | low
+  if (!length || length > 512) return ''
+
+  const payloadBits = []
+  for (let index = 16; index < 16 + length * 8; index += 1) {
+    payloadBits.push(data[signaturePixelIndex(width, height, index) + 2] & 1)
+  }
+
+  const text = new TextDecoder().decode(new Uint8Array(bitsToBytes(payloadBits)))
+  return text.startsWith(`${PIXEL_SIGNATURE_MAGIC}:`) ? text.slice(PIXEL_SIGNATURE_MAGIC.length + 1) : ''
+}
+
+window.readRlrPixelSignature = readInvisiblePixelSignature
+
 function wrapLines(targetCtx, text, maxWidth, maxLines) {
   const words = String(text || '').trim().split(/\s+/).filter(Boolean)
   if (!words.length) return []
@@ -1279,6 +1358,7 @@ function renderToCanvas(canvas, scale, config) {
   drawDetails(targetCtx, width, height, config)
   addNoise(targetCtx, width, height, config.seed, config.grain)
   drawTitle(targetCtx, width, height, config)
+  addInvisiblePixelSignature(targetCtx, width, height)
   return palette
 }
 

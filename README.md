@@ -9,6 +9,7 @@ Generador de portadas para el blog **Escritos Ricardo Lopez Reyero**.
 - Analiza el escrito y prepara titulo, slug, categoria, canonical, descripcion SEO, alt text y palabras clave.
 - Incluye botones de copiar por campo y un bloque completo en el orden de publicacion del blog.
 - Guarda automaticamente el ultimo proyecto en este navegador para reabrirlo como lo dejaste.
+- Inserta una firma invisible en pixeles: `Ricardo López Reyero` / `RLR`.
 - No requiere backend ni instalacion: abre `index.html` o publicalo en GitHub Pages.
 
 ## Uso
