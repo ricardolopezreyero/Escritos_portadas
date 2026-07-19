@@ -83,18 +83,13 @@ button {
   text-decoration: none;
 }
 
-.brand-logo {
-  display: block;
-  width: clamp(170px, 18vw, 260px);
-  height: auto;
-  filter: brightness(0) invert(1);
-}
-
 .brand-mark {
-  display: none;
-  width: 38px;
-  height: 38px;
+  display: block;
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
   object-fit: contain;
+  flex: 0 0 auto;
 }
 
 .brand-text {
@@ -602,14 +597,6 @@ canvas {
     width: 100%;
   }
 
-  .brand-logo {
-    display: none;
-  }
-
-  .brand-mark {
-    display: block;
-  }
-
   .actions,
   .action-buttons {
     width: 100%;
@@ -676,7 +663,6 @@ canvas {
     <div class="brand">
       <a class="brand-link" href="https://escritos.ricardolopezreyero.com" target="_blank" rel="noopener">
         <img class="brand-mark" src="assets/rlr-icon.png" alt="RLR">
-        <img class="brand-logo" src="assets/ricardo-logo.svg" alt="Ricardo Lopez Reyero">
         <div class="brand-text">
           <strong>Generador portadas escritos</strong>
         </div>
@@ -886,17 +872,36 @@ const seoIntentPatterns = [
   { test: /\bcomprar\b|\bprecio\b|\bcosto\b|\bservicio\b|\bherramienta\b/, label: 'Comercial' },
 ]
 
+const CATEGORY_FALLBACK = 'Generales'
+
 const categoryRules = [
-  { name: 'IA', terms: ['ia', 'inteligencia', 'artificial', 'chatgpt', 'openai', 'modelo', 'prompt', 'automatizacion'] },
-  { name: 'Tecnologia', terms: ['software', 'app', 'datos', 'codigo', 'internet', 'plataforma', 'digital', 'sistema'] },
-  { name: 'Negocios', terms: ['negocio', 'empresa', 'ventas', 'cliente', 'mercado', 'dinero', 'producto', 'estrategia'] },
-  { name: 'Educacion', terms: ['educacion', 'escuela', 'aprender', 'maestro', 'alumno', 'estudiante', 'clase', 'universidad'] },
-  { name: 'Productividad', terms: ['trabajo', 'habito', 'tiempo', 'proyecto', 'enfoque', 'rutina', 'prioridad', 'hacer'] },
-  { name: 'Liderazgo', terms: ['lider', 'liderazgo', 'equipo', 'decision', 'responsabilidad', 'direccion', 'cultura'] },
-  { name: 'Sostenibilidad', terms: ['sostenible', 'sostenibilidad', 'clima', 'energia', 'plastico', 'agua', 'ambiental'] },
-  { name: 'Cultura', terms: ['cultura', 'arte', 'historia', 'libro', 'lectura', 'musica', 'sociedad'] },
-  { name: 'Ideas', terms: ['idea', 'pensar', 'pregunta', 'curiosidad', 'mente', 'conocimiento', 'ensayo'] },
+  { name: 'Conciencia', terms: ['conciencia', 'consciente', 'autoconocimiento', 'reflexion', 'mindfulness', 'presente', 'espiritual', 'proposito', 'valores', 'etica', 'moral', 'bienestar', 'introspeccion', 'gratitud'] },
+  { name: 'Estado de gobierno', terms: ['gobierno', 'estado', 'politica', 'politico', 'presidente', 'ley', 'leyes', 'reforma', 'congreso', 'electoral', 'elecciones', 'corrupcion', 'democracia', 'institucion', 'impuestos', 'ciudadano', 'poder publico'] },
+  { name: 'Ideas', terms: ['idea', 'ideas', 'pensar', 'pregunta', 'curiosidad', 'mente', 'conocimiento', 'ensayo', 'concepto', 'teoria', 'filosofia', 'creatividad'] },
 ]
+
+function inferCategory(text, keywords) {
+  const source = normalizeText(`${text} ${keywords.join(' ')}`)
+  const ranked = categoryRules
+    .map((rule) => {
+      const score = rule.terms.reduce((sum, term) => {
+        const matches = source.match(new RegExp(`\\b${term.replace(/\s+/g, '\\s+')}\\b`, 'g'))
+        return sum + (matches ? matches.length : 0)
+      }, 0)
+      return { name: rule.name, score }
+    })
+    .sort((a, b) => b.score - a.score)
+
+  const top = ranked[0]
+  if (!top || top.score === 0) return [CATEGORY_FALLBACK]
+
+  const categories = [top.name]
+  const second = ranked[1]
+  if (second && second.score > 0 && second.score >= Math.max(3, top.score * 0.7)) {
+    categories.push(second.name)
+  }
+  return categories
+}
 
 const palettes = [
   { id: 'random', name: 'Random premium', colors: [] },
@@ -1712,21 +1717,6 @@ function keywordsFromText(text, title) {
   return { keywords: selected, internalTags }
 }
 
-function inferCategory(text, keywords) {
-  const source = normalizeText(`${text} ${keywords.join(' ')}`)
-  let best = { name: 'Generales', score: 0 }
-
-  categoryRules.forEach((rule) => {
-    const score = rule.terms.reduce((sum, term) => {
-      const matches = source.match(new RegExp(`\\b${term}\\b`, 'g'))
-      return sum + (matches ? matches.length : 0)
-    }, 0)
-    if (score > best.score) best = { name: rule.name, score }
-  })
-
-  return best.name
-}
-
 function buildDescription(text, title) {
   const titleNorm = normalizeText(title).replace(/[.!?]+$/, '')
   const bodyWithoutTitle = cleanText(text)
@@ -1782,7 +1772,7 @@ function analyzeArticle() {
   const { keywords, internalTags } = keywordsFromText(article || finalTitle, finalTitle)
   const primaryKeyword = keywords[0] || finalTitle.toLowerCase()
   const searchIntent = inferSearchIntent(finalTitle, article || finalTitle)
-  const category = inferCategory(article || finalTitle, keywords)
+  const category = inferCategory(article || finalTitle, keywords).join(', ')
   const description = buildDescription(article || finalTitle, finalTitle)
   const canonical = `${BLOG_BASE_URL}${slug}`
   const alt = `Portada del escrito "${finalTitle}" de ${DEFAULT_AUTHOR}`
