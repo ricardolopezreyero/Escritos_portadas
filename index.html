@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Ricardo Lopez Reyero">
+<title>Escritos - Portadas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f6fb;
+  --ink: #131722;
+  --muted: #677085;
+  --line: #dfe4ee;
+  --panel: #ffffff;
+  --panel-soft: #f8fafd;
+  --accent: #175cff;
+  --accent-ink: #ffffff;
+  --shadow: 0 24px 70px rgba(30, 42, 72, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px clamp(18px, 4vw, 42px);
+  background: rgba(255, 255, 255, 0.86);
+  border-bottom: 1px solid rgba(20, 27, 41, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.brand {
+  min-width: 0;
+}
+
+.brand strong {
+  display: block;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.brand span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--ink);
+  background: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(23, 92, 255, 0.28);
+}
+
+.btn.primary {
+  color: var(--accent-ink);
+  background: var(--accent);
+  box-shadow: 0 12px 28px rgba(23, 92, 255, 0.22);
+}
+
+.btn.primary:hover {
+  box-shadow: 0 14px 34px rgba(23, 92, 255, 0.28);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(310px, 390px) minmax(0, 1fr);
+  min-height: 0;
+}
+
+.panel {
+  border-right: 1px solid rgba(20, 27, 41, 0.08);
+  background: rgba(255, 255, 255, 0.68);
+  overflow-y: auto;
+}
+
+.controls {
+  display: grid;
+  gap: 20px;
+  padding: 22px;
+}
+
+.group {
+  display: grid;
+  gap: 10px;
+}
+
+.group-title {
+  color: #2c3445;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+}
+
+.field label,
+.toggle-row span {
+  color: #343c4d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.field textarea,
+.field input,
+.field select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  color: var(--ink);
+  padding: 11px 12px;
+  transition: border-color 170ms ease, box-shadow 170ms ease;
+}
+
+.field textarea {
+  min-height: 104px;
+  line-height: 1.42;
+  resize: vertical;
+}
+
+.field textarea:focus,
+.field input:focus,
+.field select:focus {
+  border-color: rgba(23, 92, 255, 0.58);
+  box-shadow: 0 0 0 4px rgba(23, 92, 255, 0.09);
+}
+
+.seed-box {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-soft);
+}
+
+.seed-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.seed-line b {
+  max-width: 210px;
+  overflow: hidden;
+  color: #293044;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toggle-row {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.switch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.switch i {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #d7deeb;
+  transition: background 180ms ease;
+}
+
+.switch i::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(27, 38, 62, 0.2);
+  transition: transform 180ms ease;
+}
+
+.switch input:checked + i {
+  background: var(--accent);
+}
+
+.switch input:checked + i::before {
+  transform: translateX(18px);
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.segmented button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.segmented button.active {
+  border-color: rgba(23, 92, 255, 0.4);
+  color: var(--accent);
+  background: rgba(23, 92, 255, 0.07);
+}
+
+.stage {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: clamp(22px, 4vw, 48px);
+}
+
+.canvas-shell {
+  width: min(100%, 900px);
+  display: grid;
+  gap: 12px;
+}
+
+.canvas-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.preview-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 14px;
+  background: #d7deeb;
+  box-shadow: var(--shadow);
+}
+
+canvas {
+  display: block;
+}
+
+#coverCanvas {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.variant-grid {
+  width: min(100%, 900px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.variant {
+  border: 1px solid rgba(20, 27, 41, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.74);
+  padding: 7px;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.variant:hover {
+  border-color: rgba(23, 92, 255, 0.36);
+  transform: translateY(-1px);
+}
+
+.variant.active {
+  border-color: rgba(23, 92, 255, 0.7);
+}
+
+.variant canvas {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 7px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 5;
+  transform: translate(-50%, 80px);
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 16px 44px rgba(17, 24, 39, 0.24);
+  transition: transform 220ms ease;
+}
+
+.toast.show {
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .actions .btn {
+    flex: 1 1 135px;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    border-right: 0;
+    border-bottom: 1px solid rgba(20, 27, 41, 0.08);
+  }
+
+  .controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .group:first-child,
+  .group:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 620px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .variant-grid {
+    gap: 8px;
+  }
+
+  .canvas-meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <strong>Escritos - Portadas</strong>
+      <span>600 x 400 px - exportacion 1X y 2X</span>
+    </div>
+    <div class="actions">
+      <button class="btn" id="copyBtn" type="button">Copiar PNG</button>
+      <button class="btn" id="download1xBtn" type="button">Descargar 1X</button>
+      <button class="btn primary" id="download2xBtn" type="button">Descargar 2X</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="panel">
+      <div class="controls">
+        <section class="group">
+          <div class="group-title">Texto</div>
+          <div class="field">
+            <label for="titleInput">Titulo</label>
+            <textarea id="titleInput" maxlength="130">Como hacer un gran trabajo</textarea>
+          </div>
+          <div class="toggle-row">
+            <span>Mostrar titulo</span>
+            <label class="switch">
+              <input id="showTitleInput" type="checkbox" checked>
+              <i></i>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span>Solo degradado</span>
+            <label class="switch">
+              <input id="gradientOnlyInput" type="checkbox">
+              <i></i>
+            </label>
+          </div>
+        </section>
+
+        <section class="group">
+          <div class="group-title">Composicion</div>
+          <div class="field">
+            <label for="paletteInput">Color premium</label>
+            <select id="paletteInput"></select>
+          </div>
+          <div class="field">
+            <label>Titulo</label>
+            <div class="segmented" id="titleStyleGroup">
+              <button type="button" data-style="editorial" class="active">Editorial</button>
+              <button type="button" data-style="glass">Cristal</button>
+              <button type="button" data-style="quiet">Quieto</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Alineacion</label>
+            <div class="segmented" id="alignGroup">
+              <button type="button" data-align="left" class="active">Izq</button>
+              <button type="button" data-align="center">Centro</button>
+              <button type="button" data-align="right">Der</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="group">
+          <div class="group-title">Detalle</div>
+          <div class="toggle-row">
+            <span>Figuras finas</span>
+            <label class="switch">
+              <input id="detailInput" type="checkbox" checked>
+              <i></i>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span>Grano sutil</span>
+            <label class="switch">
+              <input id="grainInput" type="checkbox" checked>
+              <i></i>
+            </label>
+          </div>
+          <div class="field">
+            <label for="softnessInput">Suavidad</label>
+            <input id="softnessInput" type="range" min="0" max="100" value="72">
+          </div>
+        </section>
+
+        <section class="group">
+          <div class="group-title">Nacimiento</div>
+          <button class="btn primary" id="randomBtn" type="button">Nuevo random unico</button>
+          <div class="seed-box">
+            <div class="seed-line"><span>Semilla</span><b id="seedLabel"></b></div>
+            <div class="seed-line"><span>Minuto</span><b id="minuteLabel"></b></div>
+            <div class="seed-line"><span>Decima</span><b id="deciLabel"></b></div>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="stage">
+      <div class="canvas-shell">
+        <div class="canvas-meta">
+          <span id="paletteLabel"></span>
+          <span>600 x 400 - 1200 x 800</span>
+        </div>
+        <div class="preview-wrap">
+          <canvas id="coverCanvas" width="1200" height="800"></canvas>
+        </div>
+      </div>
+      <div class="variant-grid" id="variantGrid"></div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CANVAS_WIDTH = 600
+const CANVAS_HEIGHT = 400
+const PREVIEW_SCALE = 2
+const HISTORY_KEY = 'escritos-portadas:used-seeds:v1'
+
+const palettes = [
+  { id: 'random', name: 'Random premium', colors: [] },
+  { id: 'aurora', name: 'Aurora azul menta', colors: ['#b8fff2', '#71d8ff', '#357cff', '#9b88ff', '#f7d5ff'] },
+  { id: 'ensayo', name: 'Ensayo durazno cielo', colors: ['#ff8f4d', '#ffc2a1', '#f6d8e8', '#9fd8ff', '#4db6ff'] },
+  { id: 'calma', name: 'Calma verde agua', colors: ['#d9f4c8', '#7ee6b2', '#34c6a5', '#8ad5ff', '#f5f7ff'] },
+  { id: 'noche', name: 'Noche violeta', colors: ['#3227d8', '#6547ff', '#bd5dff', '#ffb7ef', '#9ed2ff'] },
+  { id: 'papel', name: 'Papel dorado rosa', colors: ['#ffe5a6', '#ffaf7b', '#ff8aa5', '#cdb9ff', '#a6d9ff'] },
+  { id: 'bosque', name: 'Bosque electrico', colors: ['#0e7b5f', '#23d39b', '#94f0c6', '#7cc8ff', '#f4fbff'] },
+  { id: 'tinta', name: 'Tinta editorial', colors: ['#1b2a6b', '#3155ff', '#79dcff', '#d8f1ff', '#f7d2e6'] },
+]
+
+const state = {
+  title: 'Como hacer un gran trabajo',
+  showTitle: true,
+  gradientOnly: false,
+  paletteId: 'random',
+  titleStyle: 'editorial',
+  titleAlign: 'left',
+  details: true,
+  grain: true,
+  softness: 72,
+  seed: '',
+  born: null,
+  variants: [],
+}
+
+const els = {
+  title: document.querySelector('#titleInput'),
+  showTitle: document.querySelector('#showTitleInput'),
+  gradientOnly: document.querySelector('#gradientOnlyInput'),
+  palette: document.querySelector('#paletteInput'),
+  detail: document.querySelector('#detailInput'),
+  grain: document.querySelector('#grainInput'),
+  softness: document.querySelector('#softnessInput'),
+  random: document.querySelector('#randomBtn'),
+  canvas: document.querySelector('#coverCanvas'),
+  paletteLabel: document.querySelector('#paletteLabel'),
+  seedLabel: document.querySelector('#seedLabel'),
+  minuteLabel: document.querySelector('#minuteLabel'),
+  deciLabel: document.querySelector('#deciLabel'),
+  variants: document.querySelector('#variantGrid'),
+  toast: document.querySelector('#toast'),
+}
+
+const ctx = els.canvas.getContext('2d', { willReadFrequently: true })
+
+function pad(value, size = 2) {
+  return String(value).padStart(size, '0')
+}
+
+function readHistory() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function writeHistory(items) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(-500)))
+}
+
+function makeBirthSeed(offset = 0) {
+  const now = new Date()
+  const decisecond = Math.floor(now.getMilliseconds() / 100)
+  const perf = Math.floor((performance.now() * 10) % 100000)
+  const minuteKey = `${pad(now.getHours())}${pad(now.getMinutes())}`
+  const stamp = [
+    now.getFullYear(),
+    pad(now.getMonth() + 1),
+    pad(now.getDate()),
+    minuteKey,
+    pad(now.getSeconds()),
+    decisecond,
+    pad(now.getMilliseconds(), 3),
+    pad(perf, 5),
+    offset,
+  ].join('-')
+  return {
+    seed: `escritos-${stamp}`,
+    born: {
+      iso: now.toISOString(),
+      minute: `${pad(now.getHours())}:${pad(now.getMinutes())}`,
+      decisecond,
+    },
+  }
+}
+
+function uniqueBirth(offset = 0) {
+  const history = readHistory()
+  let birth = makeBirthSeed(offset)
+  let guard = 0
+  while (history.includes(birth.seed) && guard < 30) {
+    guard += 1
+    birth = makeBirthSeed(offset + guard)
+  }
+  history.push(birth.seed)
+  writeHistory(history)
+  return birth
+}
+
+function hashSeed(seed) {
+  let hash = 2166136261
+  for (let i = 0; i < seed.length; i += 1) {
+    hash ^= seed.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return hash >>> 0
+}
+
+function randomFrom(seed) {
+  let value = hashSeed(seed)
+  return function next() {
+    value += 0x6d2b79f5
+    let t = value
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function pick(rand, items) {
+  return items[Math.floor(rand() * items.length) % items.length]
+}
+
+function hexToRgb(hex) {
+  const clean = hex.replace('#', '')
+  const value = parseInt(clean, 16)
+  return {
+    r: (value >> 16) & 255,
+    g: (value >> 8) & 255,
+    b: value & 255,
+  }
+}
+
+function rgba(hex, alpha) {
+  const rgb = hexToRgb(hex)
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`
+}
+
+function getPalette(seed) {
+  const rand = randomFrom(`${seed}:palette`)
+  const available = palettes.filter((palette) => palette.id !== 'random')
+  if (state.paletteId === 'random') {
+    return pick(rand, available)
+  }
+  return palettes.find((palette) => palette.id === state.paletteId) || available[0]
+}
+
+function createLinearPoints(width, height, angle) {
+  const cx = width / 2
+  const cy = height / 2
+  const length = Math.hypot(width, height)
+  const dx = Math.cos(angle) * length / 2
+  const dy = Math.sin(angle) * length / 2
+  return [cx - dx, cy - dy, cx + dx, cy + dy]
+}
+
+function drawMeshGradient(targetCtx, width, height, config) {
+  const rand = randomFrom(`${config.seed}:mesh`)
+  const palette = getPalette(config.seed)
+  const softness = config.softness / 100
+  const angle = rand() * Math.PI * 2
+  const [x1, y1, x2, y2] = createLinearPoints(width, height, angle)
+  const linear = targetCtx.createLinearGradient(x1, y1, x2, y2)
+  const ordered = [...palette.colors].sort(() => rand() - 0.5)
+
+  ordered.forEach((color, index) => {
+    const stop = ordered.length === 1 ? 0 : index / (ordered.length - 1)
+    linear.addColorStop(stop, color)
+  })
+
+  targetCtx.fillStyle = linear
+  targetCtx.fillRect(0, 0, width, height)
+
+  const layerCount = 7 + Math.floor(rand() * 5)
+  targetCtx.save()
+  targetCtx.globalCompositeOperation = 'screen'
+  for (let i = 0; i < layerCount; i += 1) {
+    const color = pick(rand, ordered)
+    const x = width * (-0.12 + rand() * 1.24)
+    const y = height * (-0.16 + rand() * 1.32)
+    const radius = Math.max(width, height) * (0.26 + rand() * (0.54 + softness * 0.18))
+    const glow = targetCtx.createRadialGradient(x, y, 0, x, y, radius)
+    glow.addColorStop(0, rgba(color, 0.5 - softness * 0.12))
+    glow.addColorStop(0.34 + rand() * 0.22, rgba(color, 0.16 + softness * 0.1))
+    glow.addColorStop(1, rgba(color, 0))
+    targetCtx.fillStyle = glow
+    targetCtx.fillRect(0, 0, width, height)
+  }
+  targetCtx.restore()
+
+  targetCtx.save()
+  targetCtx.globalCompositeOperation = 'overlay'
+  const haze = targetCtx.createLinearGradient(0, 0, width, height)
+  haze.addColorStop(0, 'rgba(255,255,255,0.18)')
+  haze.addColorStop(0.52, 'rgba(255,255,255,0.02)')
+  haze.addColorStop(1, 'rgba(6,12,32,0.18)')
+  targetCtx.fillStyle = haze
+  targetCtx.fillRect(0, 0, width, height)
+  targetCtx.restore()
+
+  return palette
+}
+
+function drawDetails(targetCtx, width, height, config) {
+  if (!config.details || config.gradientOnly) return
+
+  const rand = randomFrom(`${config.seed}:details`)
+  const baseX = width * (0.46 + rand() * 0.18)
+  const baseY = height * (0.44 + rand() * 0.18)
+  const scale = Math.min(width, height)
+
+  targetCtx.save()
+  targetCtx.strokeStyle = 'rgba(255,255,255,0.55)'
+  targetCtx.fillStyle = 'rgba(255,255,255,0.08)'
+  targetCtx.lineWidth = Math.max(1, width / 700)
+
+  for (let i = 0; i < 3; i += 1) {
+    const radius = scale * (0.16 + rand() * 0.13)
+    const x = baseX + (rand() - 0.5) * width * 0.2
+    const y = baseY + (rand() - 0.5) * height * 0.2
+    targetCtx.beginPath()
+    targetCtx.arc(x, y, radius, 0, Math.PI * 2)
+    targetCtx.fill()
+    targetCtx.stroke()
+  }
+
+  targetCtx.globalAlpha = 0.5
+  for (let i = 0; i < 42; i += 1) {
+    const x = baseX + (rand() - 0.5) * width * 0.44
+    const y = baseY + (rand() - 0.5) * height * 0.44
+    const r = Math.max(1.2, scale * (0.004 + rand() * 0.01))
+    targetCtx.beginPath()
+    targetCtx.arc(x, y, r, 0, Math.PI * 2)
+    targetCtx.fillStyle = `rgba(255,255,255,${0.18 + rand() * 0.18})`
+    targetCtx.fill()
+  }
+
+  targetCtx.globalAlpha = 0.24
+  targetCtx.setLineDash([Math.max(3, width / 160), Math.max(5, width / 110)])
+  for (let i = 0; i < 2; i += 1) {
+    targetCtx.beginPath()
+    targetCtx.arc(baseX, baseY, scale * (0.32 + i * 0.13), Math.PI * 0.8, Math.PI * 1.95)
+    targetCtx.stroke()
+  }
+  targetCtx.restore()
+}
+
+function addNoise(targetCtx, width, height, seed, enabled) {
+  if (!enabled) return
+  const rand = randomFrom(`${seed}:grain`)
+  const image = targetCtx.getImageData(0, 0, width, height)
+  const data = image.data
+  for (let i = 0; i < data.length; i += 4) {
+    const n = (rand() - 0.5) * 9
+    data[i] = Math.max(0, Math.min(255, data[i] + n))
+    data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + n))
+    data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + n))
+  }
+  targetCtx.putImageData(image, 0, 0)
+}
+
+function wrapLines(targetCtx, text, maxWidth, maxLines) {
+  const words = String(text || '').trim().split(/\s+/).filter(Boolean)
+  if (!words.length) return []
+  const lines = []
+  let current = ''
+
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word
+    if (targetCtx.measureText(next).width <= maxWidth || !current) {
+      current = next
+    } else {
+      lines.push(current)
+      current = word
+    }
+  })
+  if (current) lines.push(current)
+
+  if (lines.length <= maxLines) return lines
+
+  const trimmed = lines.slice(0, maxLines)
+  while (targetCtx.measureText(`${trimmed[trimmed.length - 1]}...`).width > maxWidth && trimmed[trimmed.length - 1].length > 3) {
+    trimmed[trimmed.length - 1] = trimmed[trimmed.length - 1].slice(0, -1).trim()
+  }
+  trimmed[trimmed.length - 1] = `${trimmed[trimmed.length - 1]}...`
+  return trimmed
+}
+
+function fitTitle(targetCtx, text, width, maxWidth, maxLines) {
+  let size = Math.round(width * 0.092)
+  const minSize = Math.round(width * 0.044)
+  let lines = []
+  while (size >= minSize) {
+    targetCtx.font = `800 ${size}px Inter, sans-serif`
+    lines = wrapLines(targetCtx, text, maxWidth, maxLines)
+    if (lines.length <= maxLines) break
+    size -= 2
+  }
+  return { size, lines }
+}
+
+function drawTitle(targetCtx, width, height, config) {
+  const title = String(config.title || '').trim()
+  if (!config.showTitle || config.gradientOnly || !title) return
+
+  const padding = width * 0.072
+  const maxWidth = width * (config.titleAlign === 'center' ? 0.76 : 0.68)
+  const { size, lines } = fitTitle(targetCtx, title, width, maxWidth, 3)
+  const lineHeight = size * 1.08
+  const blockHeight = lines.length * lineHeight
+  const y = config.titleStyle === 'quiet' ? height * 0.69 : height * 0.56
+
+  let x = padding
+  let align = 'left'
+  if (config.titleAlign === 'center') {
+    x = width / 2
+    align = 'center'
+  }
+  if (config.titleAlign === 'right') {
+    x = width - padding
+    align = 'right'
+  }
+
+  targetCtx.save()
+  if (config.titleStyle === 'glass') {
+    const boxWidth = maxWidth + padding * 0.75
+    const boxHeight = blockHeight + padding * 0.46
+    const boxX = align === 'center' ? x - boxWidth / 2 : align === 'right' ? x - boxWidth : x - padding * 0.22
+    const boxY = y - boxHeight / 2 - size * 0.08
+    roundRect(targetCtx, boxX, boxY, boxWidth, boxHeight, Math.max(18, width * 0.035))
+    targetCtx.fillStyle = 'rgba(255,255,255,0.16)'
+    targetCtx.fill()
+    targetCtx.strokeStyle = 'rgba(255,255,255,0.32)'
+    targetCtx.lineWidth = Math.max(1, width / 900)
+    targetCtx.stroke()
+  } else if (config.titleStyle === 'editorial') {
+    const fade = targetCtx.createLinearGradient(0, height * 0.18, 0, height)
+    fade.addColorStop(0, 'rgba(4,8,22,0)')
+    fade.addColorStop(1, 'rgba(4,8,22,0.22)')
+    targetCtx.fillStyle = fade
+    targetCtx.fillRect(0, 0, width, height)
+  }
+
+  targetCtx.textAlign = align
+  targetCtx.textBaseline = 'middle'
+  targetCtx.font = `800 ${size}px Inter, sans-serif`
+  targetCtx.fillStyle = 'rgba(255,255,255,0.96)'
+  targetCtx.shadowColor = 'rgba(8,12,28,0.36)'
+  targetCtx.shadowBlur = size * 0.22
+  targetCtx.shadowOffsetY = size * 0.08
+
+  lines.forEach((line, index) => {
+    const lineY = y - blockHeight / 2 + lineHeight * index + lineHeight / 2
+    targetCtx.fillText(line, x, lineY)
+  })
+  targetCtx.restore()
+}
+
+function roundRect(targetCtx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2)
+  targetCtx.beginPath()
+  targetCtx.moveTo(x + r, y)
+  targetCtx.arcTo(x + width, y, x + width, y + height, r)
+  targetCtx.arcTo(x + width, y + height, x, y + height, r)
+  targetCtx.arcTo(x, y + height, x, y, r)
+  targetCtx.arcTo(x, y, x + width, y, r)
+  targetCtx.closePath()
+}
+
+function renderToCanvas(canvas, scale, config) {
+  const width = CANVAS_WIDTH * scale
+  const height = CANVAS_HEIGHT * scale
+  canvas.width = width
+  canvas.height = height
+  const targetCtx = canvas.getContext('2d', { willReadFrequently: true })
+  const palette = drawMeshGradient(targetCtx, width, height, config)
+  drawDetails(targetCtx, width, height, config)
+  addNoise(targetCtx, width, height, config.seed, config.grain)
+  drawTitle(targetCtx, width, height, config)
+  return palette
+}
+
+function render() {
+  const palette = renderToCanvas(els.canvas, PREVIEW_SCALE, state)
+  els.paletteLabel.textContent = palette.name
+  els.seedLabel.textContent = state.seed.replace('escritos-', '')
+  els.minuteLabel.textContent = state.born ? state.born.minute : ''
+  els.deciLabel.textContent = state.born ? `${state.born.decisecond}/10` : ''
+}
+
+function renderVariants() {
+  els.variants.innerHTML = ''
+  state.variants.forEach((variant, index) => {
+    const button = document.createElement('button')
+    button.className = `variant${variant.seed === state.seed ? ' active' : ''}`
+    button.type = 'button'
+    button.setAttribute('aria-label', `Variante ${index + 1}`)
+    const canvas = document.createElement('canvas')
+    button.appendChild(canvas)
+    els.variants.appendChild(button)
+    renderToCanvas(canvas, 0.5, { ...state, seed: variant.seed, born: variant.born })
+    button.addEventListener('click', () => {
+      state.seed = variant.seed
+      state.born = variant.born
+      render()
+      renderVariants()
+    })
+  })
+}
+
+function buildVariantSet() {
+  state.variants = [0, 1, 2].map((offset) => uniqueBirth(offset))
+  state.seed = state.variants[0].seed
+  state.born = state.variants[0].born
+  render()
+  renderVariants()
+}
+
+function configFromInputs() {
+  state.title = els.title.value
+  state.showTitle = els.showTitle.checked
+  state.gradientOnly = els.gradientOnly.checked
+  state.paletteId = els.palette.value
+  state.details = els.detail.checked
+  state.grain = els.grain.checked
+  state.softness = Number(els.softness.value)
+}
+
+function toast(message) {
+  els.toast.textContent = message
+  els.toast.classList.add('show')
+  clearTimeout(toast.timer)
+  toast.timer = setTimeout(() => els.toast.classList.remove('show'), 1900)
+}
+
+function sanitizeFileName(value) {
+  return String(value || 'escritos-portada')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .toLowerCase()
+    .slice(0, 70) || 'escritos-portada'
+}
+
+function download(scale) {
+  const canvas = document.createElement('canvas')
+  renderToCanvas(canvas, scale, state)
+  const link = document.createElement('a')
+  const title = state.gradientOnly || !state.title.trim() ? 'degradado-premium' : state.title
+  link.download = `${sanitizeFileName(title)}-${CANVAS_WIDTH * scale}x${CANVAS_HEIGHT * scale}.png`
+  link.href = canvas.toDataURL('image/png')
+  link.click()
+}
+
+async function copyPng() {
+  const canvas = document.createElement('canvas')
+  renderToCanvas(canvas, 2, state)
+  if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+    download(2)
+    toast('PNG 2X descargado')
+    return
+  }
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
+  await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+  toast('PNG copiado')
+}
+
+function syncTitleVisibility() {
+  if (els.gradientOnly.checked) {
+    els.showTitle.checked = false
+    els.showTitle.disabled = true
+  } else {
+    els.showTitle.disabled = false
+  }
+}
+
+function initPaletteOptions() {
+  palettes.forEach((palette) => {
+    const option = document.createElement('option')
+    option.value = palette.id
+    option.textContent = palette.name
+    els.palette.appendChild(option)
+  })
+}
+
+function initSegmented(groupId, key, dataAttr) {
+  document.querySelectorAll(`#${groupId} button`).forEach((button) => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll(`#${groupId} button`).forEach((item) => item.classList.remove('active'))
+      button.classList.add('active')
+      state[key] = button.dataset[dataAttr]
+      render()
+      renderVariants()
+    })
+  })
+}
+
+function bind() {
+  ;[els.title, els.showTitle, els.gradientOnly, els.palette, els.detail, els.grain, els.softness].forEach((input) => {
+    input.addEventListener('input', () => {
+      syncTitleVisibility()
+      configFromInputs()
+      render()
+      renderVariants()
+    })
+  })
+
+  els.random.addEventListener('click', () => {
+    configFromInputs()
+    buildVariantSet()
+    toast('Nueva portada')
+  })
+
+  document.querySelector('#download1xBtn').addEventListener('click', () => download(1))
+  document.querySelector('#download2xBtn').addEventListener('click', () => download(2))
+  document.querySelector('#copyBtn').addEventListener('click', () => {
+    copyPng().catch(() => {
+      download(2)
+      toast('PNG 2X descargado')
+    })
+  })
+
+  initSegmented('titleStyleGroup', 'titleStyle', 'style')
+  initSegmented('alignGroup', 'titleAlign', 'align')
+}
+
+initPaletteOptions()
+bind()
+configFromInputs()
+syncTitleVisibility()
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(buildVariantSet)
+} else {
+  buildVariantSet()
+}
+</script>
+</body>
+</html>
