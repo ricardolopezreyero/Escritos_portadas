@@ -1,4 +1,4 @@
-const CACHE_NAME = 'escritos-portadas-v2'
+const CACHE_NAME = 'escritos-portadas-v3'
 const ASSETS = [
   './',
   './index.html',

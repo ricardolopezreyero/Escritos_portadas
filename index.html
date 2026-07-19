@@ -84,6 +84,13 @@ button {
   height: auto;
 }
 
+.brand-mark {
+  display: none;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
 .brand-text {
   display: grid;
   gap: 2px;
@@ -586,8 +593,16 @@ canvas {
 
   .brand {
     width: 100%;
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .brand-logo {
+    display: none;
+  }
+
+  .brand-mark {
+    display: block;
   }
 
   .actions,
@@ -654,6 +669,7 @@ canvas {
 <div class="app">
   <header class="topbar">
     <div class="brand">
+      <img class="brand-mark" src="assets/rlr-icon.png" alt="RLR">
       <img class="brand-logo" src="assets/ricardo-logo.svg" alt="Ricardo Lopez Reyero">
       <div class="brand-text">
         <strong>Escritos - Portadas</strong>
